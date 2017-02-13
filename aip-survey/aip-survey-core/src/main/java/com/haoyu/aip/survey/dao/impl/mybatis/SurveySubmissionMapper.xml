@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.survey.dao.impl.mybatis.SurveySubmissionMapper">
+	<resultMap id="BaseResultMap" type="com.haoyu.aip.survey.entity.SurveySubmission">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="QUESTION_ID" property="question.id" jdbcType="VARCHAR" />
+		<result column="RESPONSE" property="response" jdbcType="VARCHAR" />
+		<result column="CREATOR" property="creator.id" jdbcType="VARCHAR" />
+		<result column="REAL_NAME" property="creator.realName" jdbcType="VARCHAR"/>
+		<result column="CREATE_TIME" property="createTime" jdbcType="VARCHAR"/>
+	</resultMap>
+	<sql id="Base_Column_List">
+		SS.ID, SS.RESPONSE, SS.CREATOR,SS.QUESTION_ID,SS.CREATE_TIME
+	</sql>
+	<insert id="insert" parameterType="com.haoyu.aip.survey.entity.SurveySubmission">
+		insert into SURVEY_SUBMISSION
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="question != null and question.id != null">
+				QUESTION_ID,
+			</if>
+			<if test="response != null">
+				RESPONSE,
+			</if>
+			<if test="surveyUser != null and surveyUser.id != null">
+				SURVEY_USER_ID,
+			</if>
+			<if test="creator != null and creator.id != null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="question != null and question.id != null">
+				#{question.id,jdbcType=VARCHAR},
+			</if>
+			<if test="response != null">
+				#{response,jdbcType=VARCHAR},
+			</if>
+			<if test="surveyUser != null and surveyUser.id != null">
+				#{surveyUser.id,jdbcType=VARCHAR},
+			</if>
+			<if test="creator != null and creator.id != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updatedby != null and updatedby.id != null">
+				#{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<insert id="batchInsert" parameterType="java.util.List">
+		insert into SURVEY_SUBMISSION(ID,QUESTION_ID,RESPONSE,SURVEY_USER_ID,CREATOR,CREATE_TIME,VERSION,IS_DELETED)
+		(
+			select ID,QUESTION_ID,RESPONSE,SURVEY_USER_ID,CREATOR,CREATE_TIME,VERSION,IS_DELETED from 
+			<foreach collection="list" separator="union all" open="(" close=")" item="submission">
+				select #{submission.id,jdbcType=VARCHAR} ID,#{submission.question.id,jdbcType=VARCHAR} QUESTION_ID,#{submission.response,jdbcType=VARCHAR} RESPONSE,#{submission.surveyUser.id,jdbcType=VARCHAR} SURVEY_USER_ID,#{submission.creator.id,jdbcType=VARCHAR} CREATOR,#{submission.createTime} CREATE_TIME,#{submission.version} VERSION,'N' IS_DELETED
+				from dual
+			</foreach>
+			TMP
+		)
+	</insert>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from SURVEY_SUBMISSION where ID = #{id,jdbcType=VARCHAR}
+	</select>
+	<select id="selectByParameter" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select 
+		<include refid="Base_Column_List" />
+		,(select BUV.REAL_NAME from BASE_USER_VIEW BUV where BUV.ID = SS.CREATOR) REAL_NAME
+		from SURVEY_SUBMISSION SS 
+		join SURVEY_USER SU on SU.ID = SS.SURVEY_USER_ID
+		where SS.IS_DELETED = 'N'
+		<if test="relationId != null">
+			and SU.RELATION_ID = #{relationId,jdbcType=VARCHAR}
+		</if>
+		<if test="questionId != null">
+			and SS.QUESTION_ID = #{questionId,jdbcType=VARCHAR}
+		</if>
+	</select>
+	<update id="updateByPrimaryKeySelective" parameterType="com.haoyu.aip.survey.entity.SurveySubmission">
+		update SURVEY_SUBMISSION
+		<set>
+			<if test="response != null"> RESPONSE = #{response,jdbcType=VARCHAR}, </if>
+			<if test="surveyUser != null and surveyUser.id != null"> SURVEY_USER_ID = #{surveyUser.id,jdbcType=VARCHAR}, </if>
+		</set>
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<delete id="deleteByPhysics" parameterType="com.haoyu.aip.survey.entity.SurveySubmission">
+		delete from SURVEY_SUBMISSION
+		<where>
+			<choose>
+				<when test="surveyUser!=null  and surveyUser.id!=null and surveyUser.id != ''">
+					SURVEY_USER_ID=#{surveyUser.id,jdbcType=VARCHAR}
+					<if test="id!=null and id!=''"> AND ID=#{id,jdbcType=VARCHAR} </if>
+				</when>
+				<otherwise> ID=#{id,jdbcType=VARCHAR} </otherwise>
+			</choose>
+		</where>
+	</delete>
+</mapper>

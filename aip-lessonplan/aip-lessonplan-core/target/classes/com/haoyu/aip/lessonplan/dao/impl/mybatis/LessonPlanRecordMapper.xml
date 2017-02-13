@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.lessonplan.dao.impl.mybatis.LessonPlanRecordMapper" >
+  <resultMap id="BaseResultMap" type="com.haoyu.aip.lessonplan.entity.LessonPlanRecord" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="TITLE" property="title" jdbcType="VARCHAR" />
+    <result column="LESSON_PLAN_ID" property="lessonPlanId" jdbcType="VARCHAR" />
+    <result column="RELATION_ID" property="relationId" jdbcType="VARCHAR" />
+    <result column="CREATE_TIME" property="createTime" jdbcType="INTEGER" />
+    <result column="CREATOR" property="creator.id" jdbcType="VARCHAR" />
+    <result column="REAL_NAME" property="creator.realName" jdbcType="VARCHAR" />
+    <result column="CONTENT" property="content" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+    ID, TITLE, LESSON_PLAN_ID, RELATION_ID, CREATOR, CREATE_TIME, UPDATEDBY, UPDATE_TIME, IS_DELETED, 
+    VERSION,CONTENT
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from LESSON_PLAN_RECORD
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="select" resultMap="BaseResultMap" parameterType="com.haoyu.aip.lessonplan.entity.LessonPlanRecord">
+  	select LPR.ID, LPR.TITLE, LPR.LESSON_PLAN_ID, LPR.RELATION_ID, LPR.CREATOR, LPR.CREATE_TIME, LPR.CONTENT 
+  	,(select BUV.REAL_NAME from BASE_USER_VIEW BUV where BUV.ID = LPR.CREATOR) REAL_NAME
+    from LESSON_PLAN_RECORD LPR
+    where LPR.IS_DELETED = 'N'
+    <if test="lessonPlanId != null" >
+        and LPR.LESSON_PLAN_ID = #{lessonPlanId, jdbcType=VARCHAR} 
+    </if>
+    <if test="relationId != null" >
+     	and LPR.RELATION_ID = #{relationId, jdbcType=VARCHAR}
+    </if>
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from LESSON_PLAN_RECORD
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  <update id="deleteByLogic" parameterType="java.lang.String">
+  	update LESSON_PLAN_RECORD
+  	set IS_DELETED = 'Y'
+  	where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <insert id="insert" parameterType="com.haoyu.aip.lessonplan.entity.LessonPlanRecord" >
+    insert into LESSON_PLAN_RECORD
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="title != null" >
+        TITLE,
+      </if>
+      <if test="lessonPlanId != null" >
+        LESSON_PLAN_ID,
+      </if>
+      <if test="relationId != null" >
+        RELATION_ID,
+      </if>
+      <if test="creator != null" >
+        CREATOR,
+      </if>
+      <if test="createTime != null" >
+        CREATE_TIME,
+      </if>
+      <if test="updatedby != null" >
+        UPDATEDBY,
+      </if>
+      <if test="updateTime != null" >
+        UPDATE_TIME,
+      </if>
+      <if test="isDeleted != null" >
+        IS_DELETED,
+      </if>
+      <if test="version != null" >
+        VERSION,
+      </if>
+      <if test="content != null" >
+        CONTENT,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="title != null" >
+        #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="lessonPlanId != null" >
+        #{lessonPlanId,jdbcType=VARCHAR},
+      </if>
+      <if test="relationId != null" >
+        #{relationId,jdbcType=VARCHAR},
+      </if>
+      <if test="creator != null" >
+        #{creator.id,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=INTEGER},
+      </if>
+      <if test="updatedby != null" >
+        #{updatedby.id,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=INTEGER},
+      </if>
+      <if test="isDeleted != null" >
+        #{isDeleted,jdbcType=CHAR},
+      </if>
+      <if test="version != null" >
+        #{version,jdbcType=DECIMAL},
+      </if>
+      <if test="content != null" >
+        #{content,jdbcType=CLOB},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.haoyu.aip.lessonplan.entity.LessonPlanRecord" >
+    update LESSON_PLAN_RECORD
+    <set >
+      <if test="title != null" >
+        TITLE = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="lessonPlanId != null" >
+        LESSON_PLAN_ID = #{lessonPlanId,jdbcType=VARCHAR},
+      </if>
+      <if test="relationId != null" >
+        RELATION_ID = #{relationId,jdbcType=VARCHAR},
+      </if>
+      <if test="updatedby != null" >
+        UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null and updateTime != 0" >
+        UPDATE_TIME = #{updateTime,jdbcType=INTEGER},
+      </if>
+      <if test="isDeleted != null" >
+        IS_DELETED = #{isDeleted,jdbcType=CHAR},
+      </if>
+      <if test="version != null" >
+        VERSION = #{version,jdbcType=DECIMAL},
+      </if>
+      <if test="content != null" >
+        CONTENT = #{content,jdbcType=CLOB},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

@@ -1,0 +1,13 @@
+com\haoyu\aip\survey\mobile\service\impl\MSurveyQuestionService.class
+com\haoyu\aip\survey\mobile\controller\MSurveyUserController.class
+com\haoyu\aip\survey\mobile\entity\MSurveyResult.class
+com\haoyu\aip\survey\mobile\controller\MSurveyQuestionController.class
+com\haoyu\aip\survey\mobile\entity\MChoice.class
+com\haoyu\aip\survey\mobile\entity\MSurvey.class
+com\haoyu\aip\survey\mobile\service\IMSurveyResultService.class
+com\haoyu\aip\survey\mobile\entity\MSurveyQuestion.class
+com\haoyu\aip\survey\mobile\entity\MSurveyUser.class
+com\haoyu\aip\survey\mobile\controller\MSurveyResultController.class
+com\haoyu\aip\survey\mobile\service\IMSurveyQuestionService.class
+com\haoyu\aip\survey\mobile\entity\MSurveySubmission.class
+com\haoyu\aip\survey\mobile\service\impl\MSurveyResultService.class

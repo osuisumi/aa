@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.qti.dao.impl.mybatis.TestDeliveryUserMapper" >
+  <resultMap id="TestDeliveryUserResultMap" type="com.haoyu.aip.qti.entity.TestDeliveryUser" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="COMPLETION_STATUS" property="completionStatus" jdbcType="VARCHAR" />
+    <result column="FINISH_TIME" property="finishTime" jdbcType="BIGINT" />
+    <result column="SUM_SCORE" property="sumScore" jdbcType="DECIMAL" />
+    <result column="ATTEMPTS" property="attempts" jdbcType="INTEGER" />
+    <association property="testDelivery" javaType="com.haoyu.aip.qti.entity.TestDelivery">
+    	<id column="TEST_DELIVERY_ID" property="id"/>
+    	<result column="RELATION_ID" property="relationId"/>
+    	<association property="test" javaType="com.haoyu.aip.qti.entity.Test">
+    		<id column="TEST_ID" property="id"/>
+    		<result column="TEST_TITLE" property="title"/>
+    		<result column="SCORE" property="score" jdbcType="DECIMAL" /> 
+    		<result column="MAX_ATTEMPTS" property="maxAttempts" jdbcType="INTEGER" />
+    		<result column="TEST_DESCRIPTION" property="description"/>
+    		<association property="testPackage" javaType="com.haoyu.aip.qti.entity.TestPackage">
+    			<id column="TEST_PACKAGE_ID" property="id"/>
+    			<result column="SANDBOX_PATH" property="sandboxPath" jdbcType="VARCHAR" />
+    			<result column="TEST_HREF" property="testHref" jdbcType="VARCHAR" />
+    		</association>
+    	</association>
+    </association>
+    <association property="deliveryUser" javaType="com.haoyu.sip.core.entity.User">
+    	<id column="DELIVERY_USER_ID" property="id"/>
+    </association>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    QT.ID, QT.COMPLETION_STATUS,QT.FINISH_TIME,QT.SUM_SCORE,QT.ATTEMPTS,QTT.MAX_ATTEMPTS,QTT.SCORE,QT.TEST_DELIVERY_ID,QTP.TEST_ID,QT.DELIVERY_USER_ID,QTT.TEST_PACKAGE_ID,QTT.TITLE TEST_TITLE,QTT.DESCRIPTION TEST_DESCRIPTION,QTPP.SANDBOX_PATH,QTPP.TEST_HREF,QTP.RELATION_ID
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="TestDeliveryUserResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from QTI_TEST_DELIVERY_USER QT
+    join QTI_TEST_DELIVERY QTP
+    on QT.TEST_DELIVERY_ID = QTP.ID
+    join QTI_TEST QTT
+    ON QTT.ID=QTP.TEST_ID
+    join QTI_TEST_PACKAGE QTPP
+    ON QTPP.ID=QTT.TEST_PACKAGE_ID
+    where QT.ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectByParameter" resultMap="TestDeliveryUserResultMap" parameterType="java.util.Map" >
+    select 
+    <include refid="Base_Column_List" />
+    from QTI_TEST_DELIVERY_USER QT
+    join QTI_TEST_DELIVERY QTP
+    on QT.TEST_DELIVERY_ID = QTP.ID
+    join QTI_TEST QTT
+    ON QTT.ID=QTP.TEST_ID
+    join QTI_TEST_PACKAGE QTPP
+    ON QTPP.ID=QTT.TEST_PACKAGE_ID
+    where QT.IS_DELETED='N'
+    <if test="deliveryUserId!=null and deliveryUserId!=''">
+    	AND DELIVERY_USER_ID=#{deliveryUserId,jdbcType=VARCHAR}
+    </if>
+    <if test="testDeliveryId!=null and testDeliveryId!=''">
+    	AND TEST_DELIVERY_ID=#{testDeliveryId,jdbcType=VARCHAR}
+    </if>
+    <if test="completionStatus!=null and completionStatus!=''">
+    	AND QT.COMPLETION_STATUS=#{completionStatus,jdbcType=VARCHAR}
+    </if>
+  </select>
+  <insert id="insert" parameterType="com.haoyu.aip.qti.entity.TestDeliveryUser" >
+    insert into QTI_TEST_DELIVERY_USER(ID, COMPLETION_STATUS,FINISH_TIME,SUM_SCORE,DELIVERY_USER_ID,ATTEMPTS,TEST_DELIVERY_ID,
+      CREATOR, CREATE_TIME, 
+      UPDATE_TIME, IS_DELETED, VERSION
+      )
+      VALUES(#{id,jdbcType=VARCHAR}, #{completionStatus,jdbcType=VARCHAR}, #{finishTime,jdbcType=BIGINT},#{sumScore,jdbcType=DECIMAL},
+      #{deliveryUser.id,jdbcType=VARCHAR},#{attempts,jdbcType=INTEGER},#{testDelivery.id,jdbcType=VARCHAR},
+      #{creator.id,jdbcType=VARCHAR}, #{createTime,jdbcType=BIGINT}, 
+      #{updateTime,jdbcType=BIGINT}, #{isDeleted,jdbcType=CHAR}, #{version,jdbcType=INTEGER})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.haoyu.aip.qti.entity.TestDeliveryUser" >
+    update QTI_TEST_DELIVERY_USER
+    SET
+      <if test="completionStatus != null" >
+        COMPLETION_STATUS = #{completionStatus,jdbcType=VARCHAR},
+      </if>
+      <if test="finishTime != null" >
+        FINISH_TIME = #{finishTime,jdbcType=BIGINT},
+      </if>
+      <if test="sumScore != null" >
+        SUM_SCORE = #{sumScore,jdbcType=DECIMAL},
+      </if>        
+      <if test="updatedby != null" >
+        UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        UPDATE_TIME = #{updateTime,jdbcType=BIGINT},
+      </if>
+      ATTEMPTS =ATTEMPTS+1,
+      VERSION = VERSION+1
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

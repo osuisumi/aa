@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.video.dao.impl.mybatis.VideoRelationMapper">
+	<resultMap id="BaseResultMap" type="com.haoyu.aip.video.entity.VideoRelation">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="VIDEO_ID" property="video.id" jdbcType="VARCHAR" />
+		<result column="RELATION_ID" property="relation.id" jdbcType="VARCHAR" />
+		<result column="VIEW_NUM" property="viewNum" jdbcType="DECIMAL" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="DECIMAL" />
+		<result column="CREATOR" property="creator.id" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="BaseSelectSql">
+		select VR.ID, VR.VIDEO_ID, VR.VIEW_NUM, VR.RELATION_ID, VR.CREATE_TIME, VR.CREATOR
+		from VIDEO_RELATION VR
+		join VIDEO V
+		on V.ID = VR.VIDEO_ID
+		and V.IS_DELETED = 'N'
+	</sql>
+	<sql id="BaseWhereSql">
+		<choose>
+			<when test="isDeleted != null and isDeleted != ''">
+				where VR.IS_DELETED = #{isDeleted}
+			</when>
+			<otherwise>
+				where VR.IS_DELETED = 'N'
+			</otherwise>
+		</choose>
+		<if test="relationId != null and relationId != ''">
+			and VR.RELATION_ID = #{relationId}
+		</if>
+		<if test="videoId != null and videoId != ''">
+			and VR.VIDEO_ID = #{videoId}
+		</if>
+	</sql>
+	<select id="select" parameterType="map" resultMap="BaseResultMap">
+		<include refid="BaseSelectSql" />
+		<include refid="BaseWhereSql" />
+	</select>
+	<select id="selectByPrimaryKey" parameterType="string" resultMap="BaseResultMap">
+		<include refid="BaseSelectSql" />
+		where VR.ID = #{id, jdbcType=VARCHAR}
+	</select>
+	<insert id="insert" parameterType="com.haoyu.aip.video.entity.VideoRelation">
+		insert into VIDEO_RELATION
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="video != null and video.id != null">
+				VIDEO_ID,
+			</if>
+			<if test="relation != null and relation.id != null">
+				RELATION_ID,
+			</if>
+			<if test="viewNum != null">
+				VIEW_NUM,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="video != null and video.id != null">
+				#{video.id,jdbcType=VARCHAR},
+			</if>
+			<if test="relation != null and relation.id != null">
+				#{relation.id,jdbcType=VARCHAR},
+			</if>
+			<if test="viewNum != null">
+				#{viewNum,jdbcType=DECIMAL},
+			</if>
+			<if test="creator != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=VARCHAR},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.video.entity.VideoRelation">
+		update VIDEO_RELATION VR
+		<set>
+			<if test="viewNum != null and viewNum > 0">
+				VIEW_NUM = (select count(ID) from VIDEO_USER where VIDEO_RELATION_ID = VR.ID and IS_DELETED = 'N'),
+			</if>
+			<if test="updatedby != null and updatedby.id != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime,jdbcType=INTEGER},
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED = #{isDeleted,jdbcType=CHAR},
+			</if>
+		</set>
+		,VERSION = VERSION + 1
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<update id="deleteByLogic" parameterType="map">
+		update VIDEO_USER 
+		set IS_DELETED = 'Y', UPDATE_TIME = #{entity.updateTime, jdbcType=TIMESTAMP}
+		<if test="entity.updatedby != null and entity.updatedby.id != null and entity.updatedby.id != ''">
+			,UPDATEDBY = #{entity.updatedby.id, jdbcType=VARCHAR}
+		</if>
+		where ID in 
+		<foreach collection="ids" open="(" close=")" item="item" separator=",">
+			#{item}
+		</foreach>
+	</update>
+</mapper>

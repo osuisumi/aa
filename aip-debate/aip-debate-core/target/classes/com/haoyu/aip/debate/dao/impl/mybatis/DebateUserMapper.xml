@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.debate.dao.impl.mybatis.DebateUserMapper" >
+   <resultMap type="com.haoyu.aip.debate.entity.DebateUser" id="DebateUserResultMap">
+	  	<id column="ID" property="id" jdbcType="VARCHAR" />
+	  	<result column="VIEWS_NUM" property="viewsNum" jdbcType="INTEGER"/>
+	  	<result column="COMMENTS_NUM" property="commentsNum" jdbcType="INTEGER"/>
+	    <association property="argument" javaType="com.haoyu.aip.debate.entity.DebateArgument">
+	    	<id column="ARGUMENT_ID" property="id" jdbcType="VARCHAR" />
+	    	<result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+	    </association>
+  </resultMap>
+   <resultMap type="com.haoyu.aip.debate.entity.DebateUser" id="DebateUserResultMap2">
+	  	<id column="ID" property="id" jdbcType="VARCHAR" />
+	  	<result column="VIEWS_NUM" property="viewsNum" jdbcType="INTEGER"/>
+	  	<result column="COMMENTS_NUM" property="commentsNum" jdbcType="INTEGER"/>
+	    <association property="argument" javaType="com.haoyu.aip.debate.entity.DebateArgument">
+	    	<id column="ARGUMENT_ID" property="id" jdbcType="VARCHAR" />
+	    	<result column="ORDER_NO" property="orderNo" jdbcType="INTEGER"/>
+	    </association>
+	    <association property="debateRelation" javaType="com.haoyu.aip.debate.entity.DebateRelation">
+	    	<id property="id" column="DEBATE_RELATION_ID"/>
+	    	<result property="timePeriod.startTime" column="START_TIME" jdbcType="DATE"/>
+	    	<result property="timePeriod.endTime" column="END_TIME" jdbcType="DATE"/>
+	    	<result property="participateNum" column="PARTICIPATE_NUM" jdbcType="INTEGER"/>
+	    	<result property="browseNum" column="BROWSE_NUM" jdbcType="INTEGER"/>
+	    	<result property="followNum" column="FOLLOW_NUM" jdbcType="INTEGER"/>
+	    	<result property="relation.id" column="RELATION_ID" jdbcType="VARCHAR" />
+	    	<association property="debate" javaType="com.haoyu.aip.debate.entity.Debate">
+	    		<id property="id" column="DEBATE_ID"/>
+	    		<result column="TITLE" property="title" jdbcType="VARCHAR" />
+		    	<result  column="SUPPLEMENT_EXPLANATION" property="supplementExplanation"/>
+		    	<association property="creator" javaType="com.haoyu.sip.core.entity.User">
+		    		<id property="id" column="USER_ID"/>
+		    		<result property="realName" column="REAL_NAME"/>
+	    		</association>
+	    		<collection property="tags" javaType="com.haoyu.sip.tag.entity.Tag">
+	    			<id property="id" column="TAG_ID"/>
+	    			<result property="name" column="TAG_NAME"/>
+	    		</collection>
+	    	</association>
+    	</association>
+  </resultMap>
+  <select id="selectByPrimaryKey" resultMap="DebateUserResultMap">
+  	select DU.ID,DU.ARGUMENT_ID,DA.DESCRIPTION,DU.VIEWS_NUM,DU.COMMENTS_NUM
+  	from DEBATE_USER DU
+  	join DEBATE_ARGUMENT DA
+  	ON DU.ARGUMENT_ID = DA.ID
+  	WHERE DU.ID=#{id,jdbcType=VARCHAR}
+  	and DU.IS_DELETED='N'
+  </select>
+  <select id="selectDebateUserByDebateRelation" parameterType="com.haoyu.aip.debate.entity.DebateRelation" resultMap="DebateUserResultMap">
+  	select DU.ID,DU.ARGUMENT_ID,DA.DESCRIPTION,DADU.VIEWS_NUM,DU.COMMENTS_NUM
+  	from DEBATE_USER DU
+  	join DEBATE_ARGUMENT DA
+  	ON DU.ARGUMENT_ID = DA.ID
+  	WHERE  DU.IS_DELETED='N'
+  	<choose>
+  		<when test="id!=null and id!=''">
+  			AND DU.DEBATE_RELATION_ID=#{id,jdbcType=VARCHAR}
+  		</when>
+  		<otherwise>
+  			AND EXISTS(SELECT 1 FROM DEBATE_RELATION DR WHERE DR.ID=DU.DEBATE_RELATION_ID 
+  			AND DR.RELATION_ID=#{relation.id,jdbcType=VARCHAR})
+  			AND DR.DEBATE_ID=#{debate.id,jdbcType=VARCHAR}
+  		</otherwise>
+  	</choose>  	
+  </select>
+  <select id="selectDebateUser" parameterType="com.haoyu.aip.debate.entity.DebateUser" resultMap="DebateUserResultMap2">
+    select DU.ID,DU.VIEWS_NUM,DU.COMMENTS_NUM,DU.ARGUMENT_ID,DA.ORDER_NO
+    ,DR.ID DEBATE_RELATION_ID,DR.START_TIME,DR.END_TIME,DR.PARTICIPATE_NUM,DR.BROWSE_NUM,DR.FOLLOW_NUM
+    ,DR.DEBATE_ID,D.TITLE,D.SUPPLEMENT_EXPLANATION,DR.RELATION_ID
+    ,(SELECT NAME FROM TAG T WHERE T.ID=TR.TAG_ID AND T.IS_DELETED='N') TAG_NAME,TR.TAG_ID,
+    (select BUV.REAL_NAME from BASE_USER_VIEW BUV where BUV.ID = D.CREATOR) REAL_NAME,
+    (select BUV.ID from BASE_USER_VIEW BUV where BUV.ID = D.CREATOR) USER_ID
+    from DEBATE_RELATION DR 
+    join DEBATE D
+    on D.ID = DR.DEBATE_ID 
+    left join  DEBATE_USER DU
+    on DU.DEBATE_RELATION_ID = DR.ID
+    AND DU.CREATOR=#{creator.id,jdbcType=VARCHAR}
+    AND DU.IS_DELETED='N'
+    left join DEBATE_ARGUMENT DA
+    on DA.ID = DU.ARGUMENT_ID
+    AND DA.IS_DELETED='N'
+    left join TAG_RELATION TR
+    on TR.RELATION_ID = D.ID
+    where DR.ID=#{debateRelation.id,jdbcType=VARCHAR}
+    AND DR.IS_DELETED='N'
+    AND D.IS_DELETED='N'
+  </select>
+  <insert id="insert" parameterType="com.haoyu.aip.debate.entity.DebateUser">
+  	insert into DEBATE_USER(ID,DEBATE_RELATION_ID,ARGUMENT_ID,VIEWS_NUM,COMMENTS_NUM,
+  	CREATOR,CREATE_TIME,IS_DELETED,VERSION)
+  	values(#{id,jdbcType=VARCHAR},#{debateRelation.id,jdbcType=VARCHAR},#{argument.id,jdbcType=VARCHAR},#{viewsNum,jdbcType=INTEGER},#{commentsNum,jdbcType=INTEGER}
+  	,#{creator.id,jdbcType=VARCHAR},#{createTime,jdbcType=BIGINT},#{isDeleted,jdbcType=VARCHAR},#{version,jdbcType=DECIMAL})
+  </insert>
+  <update id="updateViewsNum" parameterType="java.lang.String" >
+    update DEBATE_USER
+    set VIEWS_NUM=(SELECT VIEWS_NUM FROM (SELECT count(*) VIEWS_NUM FROM DEBATE_USER_VIEWS DUV
+    	JOIN DEBATE_USER DU
+    	ON DUV.DEBATE_USER_ID=DU.ID
+        WHERE DUV.IS_DELETED='N'
+        AND DU.ID=#{id,jdbcType=VARCHAR}) TMP
+    	)
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="deleteByLogic" parameterType="com.haoyu.aip.debate.entity.DebateUser">
+  	update DEBATE_USER
+  	set IS_DELETED='Y'
+  	,UPDATEDBY=#{updatedby.id,jdbcType=VARCHAR}
+  	,UPDATE_TIMNE=#{updateTime,jdbcType=BIGINT}
+  	where ID=#{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

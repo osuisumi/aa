@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.assignment.dao.impl.mybatis.AssignmentUserMapper">
+	<resultMap id="BaseResultMap" type="com.haoyu.aip.assignment.entity.AssignmentUser">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="RESPONSE" property="response" jdbcType="VARCHAR" />
+		<result column="RESPONSE_SCORE" property="responseScore" jdbcType="DECIMAL" />
+		<result column="MARK_SCORE" property="markScore" jdbcType="DECIMAL" />
+		<result column="RECEIVED_NUM" property="receivedNum"  jdbcType="DECIMAL"/>
+		<result column="MARKED_NUM" property="markedNum"  jdbcType="DECIMAL"/>
+		<result column="RECEIVE_NUM" property="receiveNum"  jdbcType="DECIMAL"/>
+		<result column="MARK_NUM" property="markNum"  jdbcType="DECIMAL"/>
+		<result column="COMMENTS" property="comment" jdbcType="VARCHAR" />
+		<result column="STATE" property="state" jdbcType="VARCHAR" />
+		<result column="RESPONSE_TIME" property="responseTime" jdbcType="TIMESTAMP" />
+		
+		<result column="CREATOR" property="creator.id" jdbcType="VARCHAR" />
+		<result column="AVATAR" property="creator.avatar" jdbcType="VARCHAR" />
+		<result column="REAL_NAME" property="creator.realName" jdbcType="VARCHAR" />
+		
+		<result column="ASSIGNMENT_RELATION_ID" property="assignmentRelation.id" jdbcType="VARCHAR" />
+		<result column="RELATION_ID" property="assignmentRelation.relation.id"  jdbcType="VARCHAR" />
+    	<result column="RESPONSE_START_TIME" property="assignmentRelation.responseTime.startTime" jdbcType="TIMESTAMP"/>
+    	<result column="RESPONSE_END_TIME" property="assignmentRelation.responseTime.endTime" jdbcType="TIMESTAMP"/>
+    	<result column="MARK_START_TIME" property="assignmentRelation.markTime.startTime" jdbcType="TIMESTAMP"/>
+    	<result column="MARK_END_TIME" property="assignmentRelation.markTime.endTime" jdbcType="TIMESTAMP"/>
+    	<result column="RESPONSE_NUM" property="assignmentRelation.responseNum"  jdbcType="DECIMAL"/>
+		
+		<result column="ASSIGNMENT_ID" property="assignmentRelation.assignment.id" jdbcType="VARCHAR" />
+		<result column="TITLE" property="assignmentRelation.assignment.title" jdbcType="VARCHAR" />
+		<result column="CONTENT" property="assignmentRelation.assignment.content" jdbcType="VARCHAR" />
+		<result column="STATE" property="assignmentRelation.assignment.state" jdbcType="VARCHAR" />
+		<result column="ASSIGNMNET_SCORE" property="assignmentRelation.assignment.score"  jdbcType="DECIMAL"/>
+		<result column="RESPONSE_TYPE" property="assignmentRelation.assignment.responseType" jdbcType="VARCHAR" />
+		<result column="RESPONSE_CONFIG" property="assignmentRelation.assignment.responseConfig" jdbcType="VARCHAR" />
+		<result column="MARK_TYPE" property="assignmentRelation.assignment.markType" jdbcType="VARCHAR" />
+		<result column="MARK_CONFIG" property="assignmentRelation.assignment.markConfig" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="selectColumnSQL">
+		select AU.ID, AU.ASSIGNMENT_RELATION_ID, AU.RESPONSE, AU.COMMENTS, AU.RESPONSE_SCORE, AU.MARK_SCORE, AU.STATE, AU.RESPONSE_TIME, AU.CREATE_TIME, AU.CREATOR,
+		AU.RECEIVED_NUM, AU.MARKED_NUM, AU.RECEIVE_NUM, AU.MARK_NUM, 
+		AR.RESPONSE_START_TIME, AR.RESPONSE_END_TIME, AR.MARK_START_TIME, AR.MARK_END_TIME, AR.ASSIGNMENT_ID, AR.RELATION_ID, 
+		A.RESPONSE_TYPE,A.RESPONSE_CONFIG,A.MARK_TYPE,A.MARK_CONFIG, A.SCORE ASSIGNMNET_SCORE, A.TITLE,
+		(select BUV.REAL_NAME from BASE_USER_VIEW BUV where BUV.ID = AU.CREATOR) REAL_NAME,
+		(select BUV.AVATAR from BASE_USER_VIEW BUV where BUV.ID = AU.CREATOR) AVATAR
+		from ASSIGNMENT_USER AU
+		join ASSIGNMENT_RELATION AR
+		on AR.ID = AU.ASSIGNMENT_RELATION_ID
+		and AR.IS_DELETED = 'N'
+		join ASSIGNMENT A 
+		on A.ID = AR.ASSIGNMENT_ID
+		and A.IS_DELETED = 'N'
+	</sql>
+	<sql id="BaseWhereSql">
+		<choose>
+			<when test="isDeleted != null and isDeleted != ''">
+				where AU.IS_DELETED = #{isDeleted}
+			</when>
+			<otherwise>
+				where AU.IS_DELETED = 'N'
+			</otherwise>
+		</choose>
+		<if test="creator != null and creator.id != null and creator.id != ''">
+			and AU.CREATOR = #{creator.id}
+		</if>
+		<if test="state != null and state != ''">
+			and #{state} like concat('%', concat(AU.STATE, '%'))
+		</if>
+		<if test="assignmentRelationId != null and assignmentRelationId != ''">
+			and AU.ASSIGNMENT_RELATION_ID = #{assignmentRelationId}
+		</if>
+		<if test="markNumLessThan != null and markNumLessThan > 0">
+			and AU.MARK_NUM <![CDATA[<]]> #{markNumLessThan}
+		</if>
+		<if test="markedNumLessThan != null and markedNumLessThan > 0">
+			and AU.MARKED_NUM <![CDATA[<]]> #{markedNumLessThan}
+		</if>
+		<if test="receivedNumLessThan != null and receivedNumLessThan > 0">
+			and AU.RECEIVED_NUM <![CDATA[<]]> #{receivedNumLessThan}
+		</if>
+		<if test="creatorNotEquals != null and creatorNotEquals != ''">
+			and AU.CREATOR != #{creatorNotEquals}
+		</if>
+		<if test="userIdNotExists != null and userIdNotExists != ''">
+			and not exists (select 1 from ASSIGNMENT_MARK where ASSIGNMENT_USER_ID = AU.ID and IS_DELETED = 'N' and USER_ID = #{userIdNotExists})
+		</if>
+		<if test="marker != null and marker != ''">
+			and exists (select 1 from ASSIGNMENT_MARK where ASSIGNMENT_USER_ID = AU.ID and IS_DELETED = 'N' and USER_ID = #{marker})
+		</if>
+		<if test="stateNotEquals != null and stateNotEquals != ''">
+			and AU.STATE != #{stateNotEquals}
+		</if>
+		<if test="assignmentId != null and assignmentId != ''">
+			and A.ID = #{assignmentId}
+		</if>
+		<if test="assignmentIds != null">
+			and A.ID in 
+			<foreach collection="assignmentIds" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+		<if test="assignmentMarkType != null and assignmentMarkType != ''">
+			and A.MARK_TYPE = #{assignmentMarkType}
+		</if>
+		<if test="relationId != null and relationId != ''">
+			and AR.RELATION_ID = #{relationId}
+		</if>
+		<if test="realName != null and realName != ''">
+			and exists (select 1 from BASE_USER_VIEW where ID = AU.CREATOR and REAL_NAME like '%${realName}%')			
+		</if>
+		<if test="responseStartTime != null">
+			and AU.RESPONSE_TIME <![CDATA[>=]]>  #{responseStartTime,jdbcType=TIMESTAMP}
+		</if>
+		<if test="responseEndTime != null">
+			and AU.RESPONSE_TIME <![CDATA[<=]]>  #{responseEndTime,jdbcType=TIMESTAMP}
+		</if>
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String">
+		<include refid="selectColumnSQL" />
+		where AU.ID = #{id,jdbcType=VARCHAR}
+	</select>
+	<select id="select" resultMap="BaseResultMap" parameterType="com.haoyu.aip.assignment.entity.AssignmentUser">
+		<include refid="selectColumnSQL" />
+		<include refid="BaseWhereSql" />
+	</select>
+	<insert id="insert" parameterType="com.haoyu.aip.assignment.entity.AssignmentUser">
+		insert into ASSIGNMENT_USER
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="assignmentRelation != null and assignmentRelation.id != null">
+				ASSIGNMENT_RELATION_ID,
+			</if>
+			<if test="response != null">
+				RESPONSE,
+			</if>
+			<if test="responseScore != null">
+				RESPONSE_SCORE,
+			</if>
+			<if test="markScore != null">
+				MARK_SCORE,
+			</if>
+			<if test="comment != null">
+				COMMENTS,
+			</if>
+			<if test="state != null">
+				STATE,
+			</if>
+			<if test="responseTime != null">
+				RESPONSE_TIME,
+			</if>
+			<if test="receivedNum != null">
+				RECEIVED_NUM,
+			</if>
+			<if test="markedNum != null">
+				MARKED_NUM,
+			</if>
+			<if test="receiveNum != null">
+				RECEIVE_NUM,
+			</if>
+			<if test="markNum != null">
+				MARK_NUM,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="assignmentRelation != null and assignmentRelation.id != null">
+				#{assignmentRelation.id,jdbcType=VARCHAR},
+			</if>
+			<if test="response != null">
+				#{response,jdbcType=VARCHAR},
+			</if>
+			<if test="responseScore != null">
+				#{responseScore,jdbcType=DECIMAL},
+			</if>
+			<if test="markScore != null">
+				#{markScore,jdbcType=DECIMAL},
+			</if>
+			<if test="comment != null">
+				#{comment,jdbcType=VARCHAR},
+			</if>
+			<if test="state != null">
+				#{state,jdbcType=VARCHAR},
+			</if>
+			<if test="responseTime != null">
+				#{responseTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="receivedNum != null">
+				#{receivedNum,jdbcType=DECIMAL},
+			</if>
+			<if test="markedNum != null">
+				#{markedNum,jdbcType=DECIMAL},
+			</if>
+			<if test="receiveNum != null">
+				#{receiveNum,jdbcType=DECIMAL},
+			</if>
+			<if test="markNum != null">
+				#{markNum,jdbcType=DECIMAL},
+			</if>
+			<if test="creator != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=DECIMAL},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.assignment.entity.AssignmentUser">
+		update ASSIGNMENT_USER AU
+		<set>
+			<if test="response != null">
+				RESPONSE = #{response,jdbcType=VARCHAR},
+			</if>
+			<if test="responseScore != null">
+				<choose>
+					
+					<when test="responseScore &lt; 0">
+						RESPONSE_SCORE = (select avg(score) from ASSIGNMENT_MARK where ASSIGNMENT_USER_ID = AU.ID and IS_DELETED = 'N' and STATE = 'marked'),
+					</when>
+					<when test="responseScore == 0">
+						RESPONSE_SCORE = 0,
+					</when>
+					<otherwise>
+						RESPONSE_SCORE = #{responseScore, jdbcType=DECIMAL},
+					</otherwise>
+				</choose>
+			</if>
+			<if test="markScore != null">
+				MARK_SCORE = #{markScore,jdbcType=DECIMAL},
+			</if>
+			<if test="comment != null">
+				COMMENTS = #{comment,jdbcType=VARCHAR},
+			</if>
+			<if test="state != null">
+				STATE = #{state,jdbcType=VARCHAR},
+			</if>
+			<if test="responseTime != null">
+				RESPONSE_TIME = #{responseTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="receivedNum != null and receivedNum > 0">
+				RECEIVED_NUM = (select COUNT(ID) from ASSIGNMENT_MARK where ASSIGNMENT_USER_ID = AU.ID and IS_DELETED = 'N'),
+			</if>
+			<if test="markedNum != null and markedNum > 0">
+				MARKED_NUM = (select COUNT(ID) from ASSIGNMENT_MARK where ASSIGNMENT_USER_ID = AU.ID and IS_DELETED = 'N' and STATE = 'marked'),
+			</if>
+			<if test="receiveNum != null and receiveNum > 0">
+				RECEIVE_NUM = (select COUNT(ID) from ASSIGNMENT_MARK AM where IS_DELETED = 'N' and exists (select 1 from (select * from ASSIGNMENT_USER) TMP where IS_DELETED = 'N' and ASSIGNMENT_RELATION_ID = AU.ASSIGNMENT_RELATION_ID and AU.CREATOR = AM.USER_ID)),
+			</if>
+			<if test="markNum != null and markNum > 0">
+				MARK_NUM = (select COUNT(ID) from ASSIGNMENT_MARK AM where IS_DELETED = 'N' and STATE = 'marked' and exists (select 1 from (select * from ASSIGNMENT_USER) TMP where IS_DELETED = 'N' and ASSIGNMENT_RELATION_ID = AU.ASSIGNMENT_RELATION_ID and AU.CREATOR = AM.USER_ID)),
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED = #{isDeleted,jdbcType=CHAR},
+			</if>
+		</set>
+		,VERSION = VERSION + 1
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<update id="deleteByLogic" parameterType="map">
+		update ASSIGNMENT_USER
+		set IS_DELETED = 'Y', UPDATE_TIME = #{entity.updateTime, jdbcType=TIMESTAMP}
+		<if test="entity.updatedby != null and entity.updatedby.id != null and entity.updatedby.id != ''">
+			,UPDATEDBY = #{entity.updatedby.id, jdbcType=VARCHAR}
+		</if>
+		where ID in 
+		<foreach collection="ids" open="(" close=")" item="item" separator=",">
+			#{item}
+		</foreach>
+	</update>
+	<select id="getCount" resultType="int" parameterType="map">
+		select count(AU.ID)
+		from ASSIGNMENT_USER AU
+		join ASSIGNMENT_RELATION AR
+		on AR.ID = AU.ASSIGNMENT_RELATION_ID
+		and AR.IS_DELETED = 'N'
+		join ASSIGNMENT A 
+		on A.ID = AR.ASSIGNMENT_ID
+		and A.IS_DELETED = 'N'
+		<include refid="BaseWhereSql" />
+	</select>
+</mapper>

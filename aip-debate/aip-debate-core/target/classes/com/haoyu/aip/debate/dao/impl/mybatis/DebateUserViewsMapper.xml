@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.debate.dao.impl.mybatis.DebateUserViewsMapper" >
+   <resultMap type="com.haoyu.aip.debate.entity.DebateUserViews" id="DebateUserViewsResultMap">
+	  	<id column="ID" property="id" jdbcType="VARCHAR" />
+	  	<id column="VIEWS_CONTENT" property="viewsContent" jdbcType="VARCHAR" />
+	  	<result column="SUPPORT_NUM" property="supportNum" jdbcType="INTEGER"/>
+	  	<result column="COMMENTS_NUM" property="commentsNum" jdbcType="INTEGER"/>
+	  	<result column="CREATE_TIME" property="createTime" jdbcType="BIGINT"/>
+	    <association property="creator" javaType="com.haoyu.sip.core.entity.User">
+	    		<id property="id" column="USER_ID"/>
+	    		<result property="realName" column="REAL_NAME"/>
+	    		<result property="avatar" column="AVATAR"/>
+	   </association>
+	   <association property="debateUser" javaType="com.haoyu.aip.debate.entity.DebateUser">
+	   		<id property="id" column="DEBATE_USER_ID"/>
+	   		<association property="argument" javaType="com.haoyu.aip.debate.entity.DebateArgument">
+	   			<id property="id" column="ARGUMENT_ID"/>
+	   			<result property="orderNo" column="ORDER_NO"/>
+	   		</association>
+	   </association>
+  </resultMap>
+  <resultMap type="com.haoyu.aip.debate.entity.ViewComment" id="ViewCommentResultMap">
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="CHILD_NUM" property="childNum" jdbcType="DECIMAL" />
+    <result column="MAIN_ID" property="mainId" jdbcType="VARCHAR" />
+    <result column="CREATE_TIME" property="createTime" jdbcType="INTEGER" /> 
+    <result column="CONTENT" property="content" jdbcType="VARCHAR" />
+    <result column="ORDER_NO" property="argumentOrderNo" jdbcType="DECIMAL" />
+    <association property="creator" javaType="com.haoyu.sip.core.entity.User">
+    	<id column="CREATOR" property="id" jdbcType="VARCHAR" />
+    	<result column="REAL_NAME" property="realName" jdbcType="VARCHAR" />
+    	<result column="AVATAR" property="avatar" jdbcType="VARCHAR" />
+    </association>
+    <association property="relation" javaType="com.haoyu.sip.core.entity.Relation">
+      	<id column="RELATION_ID" property="id" jdbcType="VARCHAR" />
+      	<result column="RELATION_TYPE" property="type" jdbcType="VARCHAR" />
+    </association>    
+  </resultMap>
+  <select id="selectDebateUserViewsByDebateUser" parameterType="com.haoyu.aip.debate.entity.DebateUser" resultMap="DebateUserViewsResultMap">
+  	select DUV.ID,DUV.VIEWS_CONTENT,DUV.SUPPORT_NUM,DUV.COMMENTS_NUM,DUV.CREATE_TIME
+  	,DUV.DEBATE_USER_ID,DU.ARGUMENT_ID,DA.ORDER_NO,DU.CREATOR USER_ID,
+  	(select BUV.REAL_NAME from BASE_USER_VIEW BUV where BUV.ID = DUV.CREATOR) REAL_NAME,
+  	(select BUV.AVATAR from BASE_USER_VIEW BUV where BUV.ID = DUV.CREATOR) AVATAR
+  	from DEBATE_USER DU
+  	join DEBATE_ARGUMENT DA
+  	ON DU.ARGUMENT_ID=DA.ID
+  	join DEBATE_USER_VIEWS DUV
+  	on DUV.DEBATE_USER_ID = DU.ID
+  	WHERE  DU.IS_DELETED='N'
+  	AND DUV.IS_DELETED='N'
+  	AND DU.DEBATE_RELATION_ID=#{debateRelation.id,jdbcType=VARCHAR}
+  	<if test="id!=null and id!=''">
+  		AND DU.ID=#{id,jdbcType=VARCHAR}
+  	</if>
+  	<if test="creator!=null and creator.id!=null and creator.id!=''">
+  		AND DU.CREATOR=#{creator.id,jdbcType=VARCHAR}
+  	</if>
+	<if test="argument!=null and argument.id!=null and argument.id!=''">
+		AND DU.ARGUMENT_ID=#{argument.id,jdbcType=VARCHAR}
+	</if>	
+  </select>
+   <select id="selectViewComment" parameterType="com.haoyu.aip.debate.entity.ViewComment" resultMap="ViewCommentResultMap">
+  	select C.ID, C.RELATION_ID,C.RELATION_TYPE, C.CHILD_NUM, C.CREATOR, C.CREATE_TIME, C.CONTENT,
+  	BUV.REAL_NAME, BUV.AVATAR,
+  	(SELECT MAX(DA.ORDER_NO) from DEBATE_USER DU
+  	join DEBATE_ARGUMENT DA
+  	ON DU.ARGUMENT_ID=DA.ID
+  	WHERE DA.IS_DELETED='N' AND DU.IS_DELETED='N' AND BUV.ID=DU.CREATOR
+  	AND DEBATE_RELATION_ID=(SELECT DUS.DEBATE_RELATION_ID FROM DEBATE_USER_VIEWS DUV JOIN DEBATE_USER DUS ON DUV.DEBATE_USER_ID=DUS.ID WHERE DUV.ID=C.RELATION_ID)
+  	) ORDER_NO
+  	from COMMENTS C
+  	join BASE_USER_VIEW BUV
+    on BUV.ID = C.CREATOR
+  	where C.IS_DELETED = 'N'
+  	<if test="relation != null and relation.type != null and relation.type != ''">
+  		and C.RELATION_TYPE = #{relation.type,jdbcType=VARCHAR}
+  	</if>
+  	<if test="relation != null and relation.id != null and relation.id != ''">
+  		and C.RELATION_ID = #{relation.id,jdbcType=VARCHAR}
+  	</if>
+  	<if test="mainId != null and mainId != ''">
+  		and C.MAIN_ID = #{mainId,jdbcType=VARCHAR}
+  	</if>
+  	<if test="creator!=null and creator.id!=null and creator.id != ''">
+  		AND BUV.CREATOR=#{creator.id,jdbcType=VARCHAR}
+  	</if>
+  	order by C.CREATE_TIME
+  </select>
+  <select id="getCount" parameterType="map" resultType="int">
+  	select count(DUV.ID) from DEBATE_USER_VIEWS DUV
+  	join DEBATE_USER DU on DUV.DEBATE_USER_ID = DU.ID and DUV.IS_DELETED = 'N' and DU.IS_DELETED = 'N'
+  	<if test="userId != null and userId != ''">and DU.CREATOR = #{userId,jdbcType=VARCHAR}</if>
+  	join DEBATE_RELATION DR on DU.DEBATE_RELATION_ID = DR.ID
+  	<if test="relationId != null and relationId != ''">
+  		and DR.RELATION_ID = #{relationId,jdbcType=VARCHAR} 
+  	</if>
+  </select>
+    
+  <insert id="insert" parameterType="com.haoyu.aip.debate.entity.DebateUserViews">
+  	insert into DEBATE_USER_VIEWS(ID,DEBATE_USER_ID,VIEWS_CONTENT,SUPPORT_NUM,COMMENTS_NUM,
+  	CREATOR,CREATE_TIME,IS_DELETED,VERSION)
+  	values(#{id,jdbcType=VARCHAR},#{debateUser.id,jdbcType=VARCHAR},#{viewsContent,jdbcType=VARCHAR},#{supportNum,jdbcType=INTEGER},#{commentsNum,jdbcType=INTEGER}
+  	,#{creator.id,jdbcType=VARCHAR},#{createTime,jdbcType=BIGINT},#{isDeleted,jdbcType=VARCHAR},#{version,jdbcType=DECIMAL})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.haoyu.aip.debate.entity.DebateUserViews">
+  	update DEBATE_USER_VIEWS
+  	set 
+  	<if test="viewsContent!=null and viewsContent!=''">
+  		VIEWS_CONTENT=#{viewsContent,jdbcType=VARCHAR},
+  	</if>
+  	UPDATE_TIME=#{updateTime,jdbcType=BIGINT},
+  	UPDATEDBY=#{updatedby.id,jdbcType=VARCHAR},
+  	VERSION=VERSION+1
+  	where ID=#{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateSupportNum" parameterType="com.haoyu.aip.debate.entity.DebateUserViews" >
+    update DEBATE_USER_VIEWS
+    set SUPPORT_NUM=#{supportNum}
+    where ID=#{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateCommentNum" parameterType="com.haoyu.aip.debate.entity.DebateUserViews" >
+    update DEBATE_USER_VIEWS
+    set COMMENTS_NUM=#{commentsNum}
+    where ID=#{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateBestViews" parameterType="com.haoyu.aip.debate.entity.DebateUserViews">
+  	update DEBATE_USER_VIEWS
+  	set IS_BEST_VIEWS='Y'
+  	UPDATE_TIME=#{updateTime,jdbcType=BIGINT},
+  	UPDATEDBY=#{updatedby.id,jdbcType=VARCHAR}
+  	VERSION=VERSION+1
+  </update>
+  <update id="updateBestViewsIsNull" parameterType="java.lang.String">
+  	update DEBATE_USER_VIEWS
+  	set IS_BEST_VIEWS=NULL
+  	WHERE ID IN(SELECT * FROM DEBATE_USER DU WHERE DU.IS_DELETED='N'
+  	AND EXISTS(SELECT 1 FROM DEBATE_USER DUU WHERE DUU.DEBATE_REALTION_ID=DU.DEBATE_RELATION_ID 
+  	AND DUU.ARGUMENT_ID=DU.ARGUMENT_ID AND DUU.ID=#{debateUser.id,jdbcType=VARCHAR}) )
+  </update>
+  <update id="deleteByLogic" parameterType="com.haoyu.aip.debate.entity.DebateUserViews">
+  	update DEBATE_USER_VIEWS 
+  	set IS_DELETED='Y',
+  	UPDATE_TIME=#{updateTime,jdbcType=BIGINT},
+  	UPDATEDBY=#{updatedby.id,jdbcType=VARCHAR},
+  	VERSION=VERSION+1
+  	where ID=#{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

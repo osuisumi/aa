@@ -1,0 +1,9 @@
+com\haoyu\aip\assignment\mobile\entity\MAssignment.class
+com\haoyu\aip\assignment\mobile\entity\MAssignmentUser.class
+com\haoyu\aip\assignment\mobile\service\IMAssignmentUserService.class
+com\haoyu\aip\assignment\mobile\service\IMAssignmentMarkService.class
+com\haoyu\aip\assignment\mobile\service\impl\MAssignmentMarkServiceImpl.class
+com\haoyu\aip\assignment\mobile\entity\MAssignmentMark.class
+com\haoyu\aip\assignment\mobile\service\impl\MAssignmentUserServiceImpl.class
+com\haoyu\aip\assignment\mobile\controller\MAssignmentMarkController.class
+com\haoyu\aip\assignment\mobile\controller\MAssignmentUserController.class

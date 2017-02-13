@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.evaluate.dao.impl.mybatis.AgreeMapper">
+	<resultMap type="com.haoyu.aip.evaluate.entity.Agree" id="AgreeResultMap">
+		<id column="ID" property="id"></id>
+		<result column="RELATION_ID" property="relation.id" jdbcType="VARCHAR" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="INTEGER" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="INTEGER" />
+		<result column="UPDATEBY" property="updateBy" jdbcType="VARCHAR" />
+		<result column="IS_DELETED" property="isDeleted" jdbcType="CHAR" />
+		<result column="VERSION" property="version" jdbcType="DECIMAL" />
+	</resultMap>
+	
+	<select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="AgreeResultMap">
+		select LA.ID,LA.RELATION_ID
+		from EVALUATE_AGREE LA
+		where LA.IS_DELETED = 'N'
+		and 
+		LA.ID = #{id,jdbcType=VARCHAR}
+	</select>
+	
+	<select id="select" parameterType="com.haoyu.aip.evaluate.entity.Agree" resultMap="AgreeResultMap">
+		select LA.ID,LA.RELATION_ID
+		from EVALUATE_AGREE LA
+		where LA.IS_DELETED='N'
+		<if test="relation!=null and relation.id!=null">
+		and LA.RELATION_ID = #{relation.id}
+		</if>
+		<if test="creator!=null and creator.id!=null">
+		and LA.CREATOR = #{creator.id}
+		</if>
+	
+	</select>
+	
+
+	<insert id="insert" parameterType="com.haoyu.aip.evaluate.entity.Agree">
+		insert into EVALUATE_AGREE
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id!=null">
+				ID,
+			</if>
+			<if test="relation!=null and relation.id!=null">
+				RELATION_ID,
+			</if>
+			<if test="creator!=null and creator.id!=null">
+				CREATOR,
+			</if>
+			<if test="createTime!=null">
+				CREATE_TIME,
+			</if>
+			<if test="updateTime!=null">
+				UPDATE_TIME,
+			</if>
+			<if test="updatedby!=null">
+				UPDATEDBY,
+			</if>
+			<if test="isDeleted!=null">
+				IS_DELETED,
+			</if>
+			<if test="version!=null">
+				VERSION,
+			</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id!=null">
+				#{id},
+			</if>
+			<if test="relation!=null and relation.id!=null">
+				#{relation.id},
+			</if>
+			<if test="creator!=null and creator.id!=null">
+				#{creator.id},
+			</if>
+			<if test="createTime!=null">
+				#{createTime},
+			</if>
+			<if test="updateTime!=null">
+				#{updateTime},
+			</if>
+			<if test="updatedby!=null">
+				#{updatedBy},
+			</if>
+			<if test="isDeleted!=null">
+				#{isDeleted},
+			</if>
+			<if test="version!=null">
+				#{version},
+			</if>
+		</trim>
+	</insert>
+
+
+
+
+
+</mapper>

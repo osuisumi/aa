@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.activity.dao.impl.mybatis.ActivityResultMapper">
+	<resultMap id="BaseResultMap" type="com.haoyu.aip.activity.entity.ActivityResult">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="RELATION_ID" property="relation.id" jdbcType="VARCHAR" />
+		<result column="SCORE" property="score" jdbcType="DECIMAL" />
+		<result column="STATE" property="state" jdbcType="VARCHAR" />
+		<result column="CREATOR" property="creator.id" jdbcType="VARCHAR" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="DECIMAL" />
+		<result column="DETAIL" property="detail" jdbcType="VARCHAR" />
+		
+		<result column="ACTIVITY_ID" property="activity.id" jdbcType="VARCHAR" />
+		<result column="TITLE" property="activity.title" jdbcType="VARCHAR" />
+		<result column="TYPE" property="activity.type" jdbcType="VARCHAR" />
+		<result column="ACTIVITY_RELATION_ID" property="activity.relation.id" jdbcType="VARCHAR" />
+		<result column="START_TIME" property="activity.timePeriod.startTime" jdbcType="TIMESTAMP" />
+		<result column="END_TIME" property="activity.timePeriod.endTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="BaseSelectSql">
+		select AR.ID, AR.ACTIVITY_ID, AR.RELATION_ID, AR.SCORE, AR.STATE, AR.DETAIL, AR.CREATOR, AR.CREATE_TIME,
+		A.TITLE, A.CREATE_TIME ACTIVITY_CREATE_TIME, A.RELATION_ID ACTIVITY_RELATION_ID, A.TYPE, A.START_TIME, A.END_TIME
+		from ACTIVITY_RESULT AR
+		join ACTIVITY A
+		on AR.ACTIVITY_ID = A.ID
+		and A.IS_DELETED = 'N'
+	</sql>
+	<sql id="BaseWhereSql">
+		<choose>
+			<when test="isDeleted != null and isDeleted != ''">
+				where AR.IS_DELETED = #{isDeleted}
+			</when>
+			<otherwise>
+				where AR.IS_DELETED = 'N'
+			</otherwise>
+		</choose>
+		<if test="relationId != null and relationId != ''">
+			and AR.RELATION_ID = #{relationId}
+		</if>
+		<if test="creator != null and creator != ''">
+			and AR.CREATOR = #{creator}
+		</if>
+		<if test="activityId != null and activityId != ''">
+			and AR.ACTIVITY_ID = #{activityId}
+		</if>
+		<if test="activityIds != null">
+			and AR.ACTIVITY_ID in 
+			<foreach collection="activityIds" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+	</sql>
+	<select id="select" parameterType="map" resultMap="BaseResultMap">
+		<include refid="BaseSelectSql" />
+		<include refid="BaseWhereSql" />
+	</select>
+	<select id="selectByPrimaryKey" parameterType="string" resultMap="BaseResultMap">
+		<include refid="BaseSelectSql" />
+		where AR.ID = #{id, jdbcType=VARCHAR}
+	</select>
+	<insert id="insert" parameterType="com.haoyu.aip.activity.entity.ActivityResult">
+		insert into ACTIVITY_RESULT
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="activity != null and activity.id != null">
+				ACTIVITY_ID,
+			</if>
+			<if test="relation != null and relation.id != null">
+				RELATION_ID,
+			</if>
+			<if test="detail != null">
+				DETAIL,
+			</if>
+			<if test="score != null">
+				SCORE,
+			</if>
+			<if test="state != null">
+				STATE,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="activity != null and activity.id != null">
+				#{activity.id,jdbcType=VARCHAR},
+			</if>
+			<if test="relation != null and relation.id != null">
+				#{relation.id,jdbcType=VARCHAR},
+			</if>
+			<if test="detail != null">
+				#{detail,jdbcType=VARCHAR},
+			</if>
+			<if test="score != null">
+				#{score,jdbcType=DECIMAL},
+			</if>
+			<if test="state != null">
+				#{state,jdbcType=VARCHAR},
+			</if>
+			<if test="creator != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=VARCHAR},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.activity.entity.ActivityResult">
+		update ACTIVITY_RESULT
+		<set>
+			<if test="score != null">
+				SCORE = #{score,jdbcType=DECIMAL},
+			</if>
+			<if test="state != null">
+				STATE = #{state,jdbcType=VARCHAR},
+			</if>
+			<if test="detail != null">
+				DETAIL = #{detail,jdbcType=VARCHAR},
+			</if>
+			<if test="updatedby != null and updatedby.id != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED = #{isDeleted,jdbcType=CHAR},
+			</if>
+		</set>
+		,VERSION = VERSION + 1
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<update id="deleteByLogic" parameterType="map">
+		update ACTIVITY_RESULT 
+		set IS_DELETED = 'Y', UPDATE_TIME = #{entity.updateTime, jdbcType=TIMESTAMP}
+		<if test="entity.updatedby != null and entity.updatedby.id != null and entity.updatedby.id != ''">
+			,UPDATEDBY = #{entity.updatedby.id, jdbcType=VARCHAR}
+		</if>
+		where ID in 
+		<foreach collection="ids" open="(" close=")" item="item" separator=",">
+			#{item}
+		</foreach>
+	</update>
+</mapper>

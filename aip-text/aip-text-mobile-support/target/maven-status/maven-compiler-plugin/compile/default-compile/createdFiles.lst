@@ -1,0 +1,5 @@
+com\haoyu\aip\text\mobile\service\IMTextInfoUserService.class
+com\haoyu\aip\text\mobile\entity\MTextInfoUser.class
+com\haoyu\aip\text\mobile\controller\MTextInfoUserController.class
+com\haoyu\aip\text\mobile\service\impl\MTextInfoUserServiceImpl.class
+com\haoyu\aip\text\mobile\entity\MTextInfo.class

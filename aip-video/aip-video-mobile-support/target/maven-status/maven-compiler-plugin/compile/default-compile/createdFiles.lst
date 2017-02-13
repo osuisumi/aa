@@ -1,0 +1,5 @@
+com\haoyu\aip\mobile\video\entity\MVideo.class
+com\haoyu\aip\mobile\video\entity\MVideoUser.class
+com\haoyu\aip\mobile\video\controller\MVideoUserController.class
+com\haoyu\aip\mobile\video\service\impl\MVideoUserServiceImpl.class
+com\haoyu\aip\mobile\video\service\IMVideoUserService.class

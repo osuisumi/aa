@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.discussion.dao.impl.mybatis.DiscussionPostMapper">
+	<resultMap id="BaseResultMap" type="com.haoyu.aip.discussion.entity.DiscussionPost">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="DISCUSSION_USER_ID" property="discussionUser.id" jdbcType="VARCHAR" />
+		<result column="TARGET_ID" property="targetId" jdbcType="VARCHAR" />
+		<result column="MAIN_POST_ID" property="mainPostId" jdbcType="VARCHAR" />
+		<result column="PARENT_ID" property="parentId" jdbcType="VARCHAR" />
+		<result column="TITLE" property="title" jdbcType="VARCHAR" />
+		<result column="CONTENT" property="content" jdbcType="VARCHAR" />
+		<result column="SUPPORT_NUM" property="supportNum" jdbcType="DECIMAL" />
+		<result column="CHILD_POST_COUNT" property="childPostCount" jdbcType="DECIMAL" />
+		<result column="IS_ESSENCE" property="isEssence" jdbcType="VARCHAR" />
+		<result column="IS_TOP" property="isTop" jdbcType="VARCHAR" />
+		<result column="SCORE" property="score" jdbcType="DECIMAL" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="INTEGER" />
+		<result column="CREATOR" property="creator.id" jdbcType="VARCHAR" />
+		<result column="REAL_NAME" property="creator.realName" jdbcType="VARCHAR" />	
+		<result column="AVATAR" property="creator.avatar" jdbcType="VARCHAR" />	
+	</resultMap>
+	<sql id="selectColumnSQL" >
+	    select DP.ID,DP.DISCUSSION_USER_ID,DP.TARGET_ID,DP.MAIN_POST_ID,DP.PARENT_ID,DP.TITLE,DP.CONTENT,DP.SUPPORT_NUM,DP.CHILD_POST_COUNT,
+	    DP.IS_ESSENCE,DP.IS_TOP,DP.CREATE_TIME,DP.CREATOR,
+	    (select BUV.REAL_NAME from BASE_USER_VIEW BUV where BUV.ID = DU.CREATOR) REAL_NAME,
+	    (select BUV.AVATAR from BASE_USER_VIEW BUV where BUV.ID = DU.CREATOR) AVATAR
+		from DISCUSSION_POST DP
+	  	join DISCUSSION_USER DU
+	  	on DU.ID = DP.DISCUSSION_USER_ID
+	  	and DU.IS_DELETED = 'N'
+	</sql>
+	<sql id="Base_Column_List">
+		ID, DISCUSSION_USER_ID, TARGET_ID, MAIN_POST_ID, PARENT_ID, TITLE,
+		CONTENT, SUPPORT_NUM, CHILD_POST_COUNT, IS_ESSENCE, IS_TOP, SCORE, CREATOR, CREATE_TIME
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from DISCUSSION_POST
+		where ID = #{id,jdbcType=VARCHAR}
+	</select>
+	<select id="select" resultMap="BaseResultMap" parameterType="map">
+		<include refid="selectColumnSQL" />
+		where DP.IS_DELETED = 'N'
+		<if test="discussionRelationId != null and discussionRelationId != ''">
+			and DU.DISCUSSION_RELATION_ID = #{discussionRelationId,jdbcType=VARCHAR}
+		</if>
+		<choose>
+			<when test="mainPostId != null and mainPostId != ''">
+				and DP.MAIN_POST_ID = #{mainPostId,jdbcType=VARCHAR}
+			</when>
+			<otherwise>
+				and DP.MAIN_POST_ID = 'null'
+			</otherwise>
+		</choose>
+	</select>
+	<insert id="insert" parameterType="com.haoyu.aip.discussion.entity.DiscussionPost">
+		insert into DISCUSSION_POST
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="discussionUser != null">
+				DiSCUSSION_USER_ID,
+			</if>
+			<if test="targetId != null">
+				TARGET_ID,
+			</if>
+				MAIN_POST_ID,
+			<if test="parentId != null and parentId != ''">
+				PARENT_ID,
+			</if>
+			<if test="title != null">
+				TITLE,
+			</if>
+			<if test="content != null">
+				CONTENT,
+			</if>
+			<if test="childPostCount != null">
+				CHILD_POST_COUNT,
+			</if>
+			<if test="supportNum != null">
+				SUPPORT_NUM,
+			</if>
+			<if test="isEssence != null">
+				IS_ESSENCE,
+			</if>
+			<if test="isTop != null">
+				IS_TOP,
+			</if>
+			<if test="score != null">
+				SCORE,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="discussionUser != null">
+				#{discussionUser.id,jdbcType=VARCHAR},
+			</if>
+			<if test="targetId != null">
+				#{targetId,jdbcType=VARCHAR},
+			</if>
+			<choose>
+				<when test="mainPostId != null and mainPostId != ''">
+					#{mainPostId,jdbcType=VARCHAR},
+				</when>
+				<otherwise>
+					'null',
+				</otherwise>
+			</choose>
+			<if test="parentId != null  and parentId != ''">
+				#{parentId,jdbcType=VARCHAR},
+			</if>
+			<if test="title != null">
+				#{title,jdbcType=VARCHAR},
+			</if>
+			<if test="content != null">
+				#{content,jdbcType=VARCHAR},
+			</if>
+			<if test="childPostCount != null">
+				#{childPostCount,jdbcType=DECIMAL},
+			</if>
+			<if test="supportNum != null">
+				#{supportNum,jdbcType=DECIMAL},
+			</if>
+			<if test="isEssence != null">
+				#{isEssence,jdbcType=VARCHAR},
+			</if>
+			<if test="isTop != null">
+				#{isTop,jdbcType=VARCHAR},
+			</if>
+			<if test="score != null">
+				#{score,jdbcType=DECIMAL},
+			</if>
+			<if test="creator != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=INTEGER},
+			</if>
+			<if test="updatedby != null">
+				#{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=INTEGER},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.discussion.entity.DiscussionPost">
+		update DISCUSSION_POST DP
+		<set>
+			<if test="title != null">
+				TITLE = #{title,jdbcType=VARCHAR},
+			</if>
+			<if test="content != null">
+				CONTENT = #{content,jdbcType=VARCHAR},
+			</if>
+			<if test="childPostCount != null and childPostCount > 0">
+				CHILD_POST_COUNT = (select CHILD_POST_COUNT from (select count(ID) CHILD_POST_COUNT from DISCUSSION_POST where MAIN_POST_ID = #{id,jdbcType=VARCHAR} and IS_DELETED = 'N') TMP),
+			</if>
+			<if test="supportNum != null and supportNum > 0">
+				<!-- SUPPORT_NUM = #{supportNum,jdbcType=DECIMAL}, -->
+				SUPPORT_NUM = (select count(ID) from ATTITUDE_USER A where A.RELATION_ID = #{id,jdbcType=VARCHAR} and A.ATTITUDE = 'support' and A.IS_DELETED='N'),
+			</if>
+			<if test="isEssence != null">
+				IS_ESSENCE = #{isEssence,jdbcType=VARCHAR},
+			</if>
+			<if test="isTop != null">
+				IS_TOP = #{isTop,jdbcType=VARCHAR},
+			</if>
+			<if test="score != null">
+				SCORE = #{score,jdbcType=DECIMAL},
+			</if>
+			<if test="updatedby != null and updatedby.id != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null and createTime > 0">
+				UPDATE_TIME = #{updateTime,jdbcType=INTEGER},
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED = #{isDeleted,jdbcType=CHAR},
+			</if>
+		</set>
+		,VERSION = VERSION + 1
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<update id="deleteByLogic" parameterType="com.haoyu.aip.discussion.entity.DiscussionPost">
+		update DISCUSSION_POST
+		set IS_DELETED = 'Y', UPDATE_TIME = #{updateTime,jdbcType=INTEGER}
+		<if test="updatedby != null">
+			,UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR}
+		</if>
+		where ID = #{id,jdbcType=VARCHAR}
+		or MAIN_POST_ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<select id="getCount" resultType="int" parameterType="map">
+		select count(DP.ID)
+		from DISCUSSION_POST DP
+		where DP.IS_DELETED = 'N'
+		<if test="discussionUserId != null and discussionUserId != ''">
+			and DP.DISCUSSION_USER_ID = #{discussionUserId,jdbcType=VARCHAR}
+		</if>
+		<if test="creator != null and creator != ''">
+			and DP.CREATOR = #{creator}
+		</if>
+		<if test="mainOrSub != null and mainOrSub != ''">
+			<choose>
+				<when test="mainOrSub == 'main'">
+					and (DP.MAIN_POST_ID = 'null')
+				</when>
+				<when test="mainOrSub == 'sub'">
+					and (DP.MAIN_POST_ID != 'null')
+				</when>
+			</choose>
+		</if>
+	</select>
+</mapper>

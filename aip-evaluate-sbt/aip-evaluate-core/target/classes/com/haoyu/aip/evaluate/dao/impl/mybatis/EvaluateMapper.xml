@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.evaluate.dao.impl.mybatis.EvaluateMapper">
+	<resultMap type="com.haoyu.aip.evaluate.entity.Evaluate" id="EvaluateResultMap">
+		<id column="ID" property="id"></id>
+		<result column="EVALUATE_ENTITY_ID" property="evaluateEntityId" jdbcType="VARCHAR" />
+		<result column="SUGGEST" property="suggest" jdbcType="VARCHAR"/>
+		<result column="STATUS" property="status" jdbcType="BIGINT" />
+		<result column="AGREE_NUM" property="agreeNum" jdbcType="INTEGER"/>
+		<result column="RELATION_ID" property="relation.id" jdbcType="VARCHAR"/>
+		<result column="CREATE_TIME" property="createTime" jdbcType="INTEGER" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="INTEGER" />
+		<result column="UPDATEBY" property="updateBy" jdbcType="VARCHAR" />
+		<result column="IS_DELETED" property="isDeleted" jdbcType="CHAR" />
+		<result column="VERSION" property="version" jdbcType="DECIMAL" />
+		<association property="creator" javaType="com.haoyu.sip.core.entity.User">
+			<id property="id" column="CREATOR_ID" />
+			<result property="realName" column="CREATOR_REAL_NAME" />
+		</association>
+		<association property="evaluateScores" javaType="com.haoyu.aip.evaluate.entity.EvaluateScore">
+			<id column="EVALUATE_SCORE_ID" property="id"/>
+			<result column="ITEM" property="item"/>
+			<result column="SCORE" property="score"/>
+		</association>
+	</resultMap>
+	
+
+
+
+
+	<select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="EvaluateResultMap">
+		select E.ID,E.EVALUATE_ENTITY_ID,E.SUGGEST,E.RELATION_ID,E.CREATE_TIME,E.STATUS,E.AGREE_NUM,
+		BUV.ID CREATOR_ID,BUV.REAL_NAME,
+		ES.ID EVALUATE_SCORE_ID,ES.ITEM,ES.SCORE
+		from EVALUATE E
+		join BASE_USER_VIEW BUV on BUV.ID=E.CREATOR
+		join EVALUATE_SCORE ES on E.ID = ES.EVALUATE_ID
+		where E.IS_DELETED='N'
+		and E.ID=#{id,jdbcType=VARCHAR}
+		order by ES.ITEM
+	</select>
+
+	<select id="select" parameterType="com.haoyu.aip.evaluate.entity.Evaluate" resultMap="EvaluateResultMap">
+		select E.ID,E.EVALUATE_ENTITY_ID,E.SUGGEST,E.RELATION_ID,E.CREATE_TIME,E.STATUS,
+		BUV.ID CREATOR_ID,BUV.REAL_NAME,
+		(SELECT COUNT(*) FROM EVALUATE_AGREE where RELATION_ID = E.ID) AGREE_NUM
+		from EVALUATE E
+		join BASE_USER_VIEW BUV on BUV.ID=E.CREATOR
+		where E.IS_DELETED='N'
+		<if test="evaluateEntityId!=null">
+			and E.EVALUATE_ENTITY_ID =#{evaluateEntityId}
+		</if>
+		<if test="creator!=null and creator.id!=null">
+			and E.CREATOR = #{creator.id}
+		</if>
+	</select>
+	
+	<select id="countByEvaluateEntityId" parameterType="java.lang.String" resultType="int">
+		select count(*) from EVALUATE E
+		where E.IS_DELETED = 'N'
+		and E.EVALUATE_ENTITY_ID = #{evaluateEntityId}
+	</select>
+	
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.evaluate.entity.Evaluate">
+		update EVALUATE E
+		<set>
+			<if test="suggest!=null">
+				E.SUGGEST = #{suggest},
+			</if>
+			<if test="status!=null">
+				E.STATUS = #{status},
+			</if>
+			<if test="agreeNum!=null">
+				E.AGREE_NUM = #{agreeNum},
+			</if>
+		</set>
+		,E.VERSION = E.VERSION + 1
+		
+		where E.ID=#{id,jdbcType=VARCHAR}
+	
+	</update>
+
+	<update id="deleteByLogic" parameterType="com.haoyu.aip.evaluate.entity.Evaluate">
+		update EVALUATE EC
+		set EC.IS_DELETED='Y'
+		<where>
+			<choose>
+				<when test="id!=null">
+					EC.ID=#{id,jdbcType=VARCHAR}
+				</when>
+				<when test="evaluateEntityId!=null">
+					EC.EVALUATE_ENTITY_ID = #{evaluateEntityId,jdbcType=VARCHAR}
+				</when>
+				<otherwise>
+					EC.ID=''
+				</otherwise>
+			</choose>
+		</where>
+	</update>
+
+	<delete id="deleteByPhysics" parameterType="java.lang.String">
+		delete from EVALUATE EC
+		where EC.ID=#{id,jdbcType=VARCHAR}
+	</delete>
+
+	<insert id="insert" parameterType="com.haoyu.aip.evaluate.entity.Evaluate">
+		insert into EVALUATE
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id!=null">
+				ID,
+			</if>
+			<if test="evaluateEntityId!=null">
+				EVALUATE_ENTITY_ID,
+			</if>
+			<if test="suggest!=null">
+				SUGGEST,
+			</if>
+			<if test="status!=null">
+				STATUS,
+			</if>
+			<if test="agreeNum!=null">
+				AGREE_NUM,
+			</if>
+			<if test="relation!=null and relation.id!=null">
+				RELATION_ID,
+			</if>
+			<if test="creator!=null and creator.id!=null">
+				CREATOR,
+			</if>
+			<if test="createTime!=null">
+				CREATE_TIME,
+			</if>
+			<if test="updateTime!=null">
+				UPDATE_TIME,
+			</if>
+			<if test="updatedby!=null">
+				UPDATEDBY,
+			</if>
+			<if test="isDeleted!=null">
+				IS_DELETED,
+			</if>
+			<if test="version!=null">
+				VERSION,
+			</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id!=null">
+				#{id},
+			</if>
+			<if test="evaluateEntityId!=null">
+				#{evaluateEntityId},
+			</if>
+			<if test="suggest!=null">
+				#{suggest},
+			</if>
+			<if test="status!=null">
+				#{status},
+			</if>
+			<if test="agreeNum!=null">
+				#{agreeNum},
+			</if>
+			<if test="relation!=null and relation.id!=null">
+				#{relation.id},
+			</if>
+			<if test="creator!=null and creator.id!=null">
+				#{creator.id},
+			</if>
+			<if test="createTime!=null">
+				#{createTime},
+			</if>
+			<if test="updateTime!=null">
+				#{updateTime},
+			</if>
+			<if test="updatedby!=null">
+				#{updatedBy},
+			</if>
+			<if test="isDeleted!=null">
+				#{isDeleted},
+			</if>
+			<if test="version!=null">
+				#{version},
+			</if>
+		</trim>
+	</insert>
+
+
+
+
+
+</mapper>

@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haoyu.aip.survey.dao.impl.mybatis.SurveyMapper">
+	<resultMap id="surveyMap" type="com.haoyu.aip.survey.entity.Survey">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="TITLE" property="title" jdbcType="VARCHAR" />
+		<result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+		<result column="STATE" property="state" jdbcType="VARCHAR" />
+		<result column="CREATOR" property="creator.id" jdbcType="VARCHAR" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+		<result column="VERSION" property="version" jdbcType="DECIMAL" />
+		<result column="IS_DELETED" property="isDeleted" jdbcType="CHAR" />
+		<association property="questions" javaType="com.haoyu.aip.survey.entity.SurveyQuestion">
+			<result column="QUESTION_ID" property="id" jdbcType="VARCHAR" />
+			<result column="QUESTION_TITLE" property="title" jdbcType="VARCHAR" />
+			<result column="TYPE" property="type" jdbcType="VARCHAR" />
+			<result column="INTERACTION" property="interaction" jdbcType="VARCHAR" />
+			<result column="SORT_NO" property="sortNo" jdbcType="DECIMAL" />
+			<result column="SURVEY_ID" property="survey.id" jdbcType="VARCHAR" />
+			<result column="QUESTION_CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+		</association>
+	</resultMap>
+	<sql id="Base_Column_List">
+		select 
+		S.ID, S.TITLE, S.DESCRIPTION, S.STATE, S.CREATOR, S.CREATE_TIME,
+		SQ.ID QUESTION_ID,SQ.TITLE QUESTION_TITLE,SQ.TYPE,SQ.INTERACTION,SQ.SORT_NO,SQ.CREATE_TIME,SQ.SURVEY_ID,SQ.CREATE_TIME QUESTION_CREATE_TIME
+		from SURVEY S
+		left join SURVEY_QUESTION SQ on S.ID = SQ.SURVEY_ID and SQ.IS_DELETED='N'
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="surveyMap" parameterType="java.lang.String">
+		<include refid="Base_Column_List" />
+		where S.ID = #{id,jdbcType=VARCHAR}
+	</select>
+	<select id="selectByParameter" parameterType="java.util.Map" resultMap="surveyMap">
+		<include refid="Base_Column_List" />
+		left join SURVEY_RELATION SR on S.ID = SR.SURVEY_ID
+		where IS_DELETED = 'N'
+		<if test="state != null">
+			S.STATE = #{state,jdbcType=VARCHAR}
+		</if>
+		<if test="relationId != null and relationId != ''">
+			SR.RELATION_ID = #{relationId.jdbcType=VARCHAR}
+		</if>
+	</select>
+	<insert id="insert" parameterType="com.haoyu.aip.survey.entity.Survey">
+		insert into SURVEY
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="title != null">
+				TITLE,
+			</if>
+			<if test="description != null">
+				DESCRIPTION,
+			</if>
+			<if test="state != null">
+				STATE,
+			</if>
+			<if test="creator != null and creator.id !=null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="title != null">
+				#{title,jdbcType=VARCHAR},
+			</if>
+			<if test="description != null">
+				#{description,jdbcType=VARCHAR},
+			</if>
+			<if test="state != null">
+				#{state,jdbcType=VARCHAR},
+			</if>
+			<if test="creator != null and creator.id != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="updatedby != null and updatedby.id != null">
+				#{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.survey.entity.Survey">
+		update SURVEY
+		<set>
+			<if test="title != null">
+				TITLE = #{title,jdbcType=VARCHAR},
+			</if>
+			<if test="description != null">
+				DESCRIPTION = #{description,jdbcType=VARCHAR},
+			</if>
+			<if test="state != null">
+				STATE = #{state,jdbcType=VARCHAR},
+			</if>
+			<if test="updatedby != null and updatedby.id != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+			</if>
+			VERSION = VERSION+1
+		</set>
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<update id="deleteByLogic" parameterType="com.haoyu.aip.survey.entity.Survey">
+		update SURVEY
+		set IS_DELETED = 'Y', UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP}
+		<if test="updatedby != null and updatedby.id != ''">
+			,UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR}
+		</if>
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+</mapper>

@@ -1,0 +1,261 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.courseware.dao.impl.mybatis.CoursewareMapper">
+
+	<resultMap type="com.haoyu.aip.courseware.entity.Courseware" id="CoursewareResultMap">
+		<id column="ID" property="id" />
+		<result column="TITLE" property="title" jdbcType="VARCHAR" />
+		<result column="CONTENT" property="content" jdbcType="VARCHAR" />
+		<result column="TEACH_TIME" property="teachTime" jdbcType="TIMESTAMP" />
+		<result column="STAGE" property="stage" jdbcType="VARCHAR" />
+		<result column="GRADE" property="grade" jdbcType="VARCHAR" />
+		<result column="SUBJECT" property="subject" jdbcType="VARCHAR" />
+		<result column="TEXTBOOK" property="textbook" jdbcType="VARCHAR" />
+		<result column="DESCRIPTION" property="description" jdbcType="CLOB" />
+		<result column="VIDEO_JSON" property="videoJson" jdbcType="VARCHAR" />
+		<result column="TYPE" property="type" jdbcType="VARCHAR" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="INTEGER" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="INTEGER" />
+		<result column="UPDATEBY" property="updateBy" jdbcType="VARCHAR" />
+		<result column="IS_DELETED" property="isDeleted" jdbcType="CHAR" />
+		<result column="VERSION" property="version" jdbcType="DECIMAL" />
+		
+		<association property="creator" javaType="com.haoyu.sip.core.entity.User">
+			<id property="id" column="CREATOR_ID" />
+			<result property="realName" column="CREATOR_REAL_NAME" />
+		</association>
+		<association property="teacher" javaType="com.haoyu.sip.core.entity.User">
+			<id column="TEACHER_ID" property="id" />
+			<result property="realName" column="TEACHER_REAL_NAME" />
+		</association>
+		<association property="coursewareRelations" javaType="com.haoyu.aip.courseware.entity.CoursewareRelation">
+			<id column="COURSEWARERELATION_ID" property="id" />
+			<result column="COURSEWARERELATION_RELATION_ID" property="relation.id"/>
+			<result column="COURSEWARE_RELATION_TYPE" property="relation.type"/>
+			<result column="START_TIME" property="timePeriod.startTime"/>
+			<result column="END_TIME" property="timePeriod.endTime"/>
+			<result column="IS_TOP" property="isTop"/>
+			<result column="PARTICIPATE_NUM" property="participateNum"/>
+			<result column="COURSEWARE_ID" property="coursewareId"/>
+		</association>
+	</resultMap>
+
+	<sql id="COURSEWARE_COLUMN">
+		LC.ID,LC.TITLE,LC.CONTENT,LC.TEACH_TIME,LC.TEACHER_ID,LC.STAGE,LC.GRADE,LC.SUBJECT,LC.TEXTBOOK,LC.DESCRIPTION,LC.VIDEO_JSON,LC.CREATOR,LC.CREATE_TIME,LC.UPDATE_TIME,LC.UPDATEDBY,LC.IS_DELETED,LC.VERSION,LC.TYPE
+	</sql>
+
+	<select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="CoursewareResultMap">
+		select
+		<include refid="COURSEWARE_COLUMN"></include>
+		,
+		(select REAL_NAME from BASE_USER_VIEW BUV where BUV.ID = LC.CREATOR) CREATOR_REAL_NAME,
+      	(select ID from BASE_USER_VIEW BUV where BUV.ID = LC.CREATOR) CREATOR_ID,
+      	(select REAL_NAME from BASE_USER_VIEW BUV where BUV.ID = LC.TEACHER_ID) TEACHER_REAL_NAME,
+      	(select ID from BASE_USER_VIEW BUV where BUV.ID = LC.TEACHER_ID) TEACHER_ID,
+      	
+		CR.ID COURSEWARERELATION_ID,CR.RELATION_ID COURSEWARERELATION_RELATION_ID,CR.TYPE COURSEWARE_RELATION_TYPE,CR.START_TIME,CR.END_TIME,CR.IS_TOP,CR.PARTICIPATE_NUM,CR.COURSEWARE_ID
+		
+		from COURSEWARE LC
+		join COURSEWARE_RELATION CR on CR.COURSEWARE_ID = LC.ID
+		where LC.IS_DELETED = 'N'
+		and LC.ID=#{id,jdbcType=VARCHAR}
+	</select>
+
+	<select id="select" parameterType="com.haoyu.aip.courseware.entity.Courseware" resultMap="CoursewareResultMap">
+		select
+		<include refid="COURSEWARE_COLUMN"></include>
+		,
+		(select REAL_NAME from BASE_USER_VIEW BUV where BUV.ID = LC.CREATOR) CREATOR_REAL_NAME,
+      	(select ID from BASE_USER_VIEW BUV where BUV.ID = LC.CREATOR) CREATOR_ID,
+      	(select REAL_NAME from BASE_USER_VIEW BUV where BUV.ID = LC.TEACHER_ID) TEACHER_REAL_NAME,
+      	(select ID from BASE_USER_VIEW BUV where BUV.ID = LC.TEACHER_ID) TEACHER_ID,
+		
+		CR.RELATION_ID COURSEWARE_RELATION_ID,CR.TYPE COURSEWARE_RELATION_TYPE,CR.START_TIME,CR.END_TIME,CR.COURSEWARE_ID
+		
+		from COURSEWARE LC
+		join COURSEWARE_RELATION CR on CR.COURSEWARE_ID = LC.ID
+		where LC.IS_DELETED = 'N'
+		<if test="title!=null">
+			and LC.TITLE=#{title}
+		</if>
+		<if test="content!=null">
+			and LC.CONTENT=#{content}
+		</if>
+		<if test="teacher!=null and teacher.id!=null">
+			and LC.TEACHER_ID=#{teacher.id}
+		</if>
+	</select>
+	
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.courseware.entity.Courseware">
+		update COURSEWARE LC
+		<set>
+			<if test="videoJson!=null and videoJson!=''">
+				LC.VIDEO_JSON = #{videoJson},
+			</if>
+			<if test="title!=null">
+				LC.TITLE = #{title},
+			</if>
+			 <if test="content!=null">
+				LC.CONTENT=#{content},
+			</if>
+			<if test="teachTime!=null">
+				LC.TEACH_TIME=#{teachTime},
+			</if>
+			<if test="teacher!=null and teacher.id!=null">
+				LC.TEACHER_ID = #{teacher.id},
+			</if>
+			<if test="stage!=null">
+				LC.STAGE = #{stage},
+			</if>
+			<if test="grade!=null">
+				LC.GRADE=#{grade},
+			</if>
+			<if test="subject!=null">
+				LC.SUBJECT = #{subject},
+			</if>
+			<if test="textbook!=null">
+				LC.TEXTBOOK = #{textbook},
+			</if>
+			<if test="description">
+				LC.DESCRIPTION = #{description},
+			</if>
+			<if test="type != null and type != ''">
+				LC.TYPE = #{type,jdbcType=VARCHAR}
+			</if> 
+		</set>
+		where LC.ID = #{id,jdbcType=VARCHAR}
+	</update>
+
+
+
+	<update id="deleteByLogic" parameterType="java.lang.String">
+		update COURSEWARE LC
+		set LC.IS_DELETED = 'Y'
+		where LC.ID=#{id,jdbcType=VARCHAR}
+	</update>
+
+	<delete id="deleteByPhysics" parameterType="java.lang.String">
+		delete from COURSEWARE LC
+		where LC.ID=#{id,jdbcType=VARCHAR}
+	</delete>
+
+	<insert id="insert" parameterType="com.haoyu.aip.courseware.entity.Courseware">
+		insert into COURSEWARE
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id!=null">
+				ID,
+			</if>
+			<if test="title!=null">
+				TITLE,
+			</if>
+			<if test="content!=null">
+				CONTENT,
+			</if>
+			<if test="teachTime!=null">
+				TEACH_TIME,
+			</if>
+			<if test="teacher!=null and teacher.id!=null">
+				TEACHER_ID,
+			</if>
+			<if test="stage!=null">
+				STAGE,
+			</if>
+			<if test="grade!=null">
+				GRADE,
+			</if>
+			<if test="subject!=null">
+				SUBJECT,
+			</if>
+			<if test="textbook!=null">
+				TEXTBOOK,
+			</if>
+			<if test="description!=null">
+				DESCRIPTION,
+			</if>
+			<if test="videoJson!=null">
+				VIDEO_JSON,
+			</if>
+			<if test="type!=null">
+				TYPE,
+			</if>
+			<if test="creator!=null and creator.id!=null">
+				CREATOR,
+			</if>
+			<if test="updatedby!=null">
+				UPDATEDBY,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+			<if test="version != null">
+				VERSION
+			</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id!=null">
+				#{id},
+			</if>
+			<if test="title!=null">
+				#{title},
+			</if>
+			<if test="content!=null">
+				#{content},
+			</if>
+			<if test="teachTime!=null">
+				#{teachTime},
+			</if>
+			<if test="teacher!=null and teacher.id!=null">
+				#{teacher.id},
+			</if>
+			<if test="stage!=null">
+				#{stage},
+			</if>
+			<if test="grade!=null">
+				#{grade},
+			</if>
+			<if test="subject!=null">
+				#{subject},
+			</if>
+			<if test="textbook!=null">
+				#{textbook},
+			</if>
+			<if test="description!=null">
+				#{description},
+			</if>
+			<if test="videoJson!=null">
+				#{videoJson},
+			</if>
+			<if test="type!=null">
+				#{type},
+			</if>
+			<if test="creator!=null and creator.id!=null">
+				#{creator.id},
+			</if>
+			<if test="updatedby!=null">
+				#{updatedby},
+			</if>
+			<if test="createTime != null">
+				#{createTime},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted},
+			</if>
+			<if test="version != null">
+				#{version}
+			</if>
+
+		</trim>
+
+	</insert>
+
+</mapper>

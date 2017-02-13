@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.assignment.dao.impl.mybatis.AssignmentRelationMapper">
+	<resultMap id="BaseResultMap" type="com.haoyu.aip.assignment.entity.AssignmentRelation">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result property="relation.id" column="RELATION_ID"  jdbcType="VARCHAR" />
+		<result property="createTime" column="CREATE_TIME" jdbcType="INTEGER" />
+    	<result property="responseTime.startTime" column="RESPONSE_START_TIME" jdbcType="TIMESTAMP"/>
+    	<result property="responseTime.endTime" column="RESPONSE_END_TIME" jdbcType="TIMESTAMP"/>
+    	<result property="markTime.startTime" column="MARK_START_TIME" jdbcType="TIMESTAMP"/>
+    	<result property="markTime.endTime" column="MARK_END_TIME" jdbcType="TIMESTAMP"/>
+    	<result property="responseNum" column="RESPONSE_NUM"  jdbcType="DECIMAL"/>
+    	<result property="markNum" column="MARK_NUM"  jdbcType="DECIMAL"/>
+    	
+    	<result column="CREATOR" property="creator.id" jdbcType="VARCHAR" />
+		<result column="REAL_NAME" property="creator.realName" jdbcType="VARCHAR" />	
+		<result column="AVATAR" property="creator.avatar" jdbcType="VARCHAR" />	
+    	
+    	<result column="ASSIGNMENT_ID" property="assignment.id" jdbcType="VARCHAR" />
+    	<result column="TITLE" property="assignment.title" jdbcType="VARCHAR" />
+		<result column="CONTENT" property="assignment.content" jdbcType="VARCHAR" />
+		<result column="STATE" property="assignment.state" jdbcType="VARCHAR" />
+		<result column="SCORE" property="assignment.score"  jdbcType="DECIMAL"/>
+		<result column="RESPONSE_TYPE" property="assignment.responseType" jdbcType="VARCHAR" />
+		<result column="RESPONSE_CONFIG" property="assignment.responseConfig" jdbcType="VARCHAR" />
+		<result column="MARK_TYPE" property="assignment.markType" jdbcType="VARCHAR" />
+		<result column="MARK_CONFIG" property="assignment.markConfig" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="selectColumnSQL" >
+	    select AR.ID, AR.RELATION_ID, AR.ASSIGNMENT_ID, AR.CREATE_TIME, AR.RESPONSE_START_TIME, AR.RESPONSE_END_TIME, AR.MARK_START_TIME, AR.MARK_END_TIME,
+	    AR.RESPONSE_NUM, AR.MARK_NUM, 
+	    A.TITLE, A.CONTENT, A.STATE, A.SCORE, A.RESPONSE_TYPE, A.RESPONSE_CONFIG, A.MARK_TYPE, A.MARK_CONFIG
+		from ASSIGNMENT_RELATION AR
+		left join ASSIGNMENT A
+		on AR.ASSIGNMENT_ID = A.ID
+		and AR.IS_DELETED = 'N'
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String">
+		<include refid="selectColumnSQL" />
+		where AR.ID = #{id,jdbcType=VARCHAR}
+	</select>
+	<insert id="insert" parameterType="com.haoyu.aip.assignment.entity.AssignmentRelation">
+		insert into ASSIGNMENT_RELATION
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="relation != null">
+				RELATION_ID,
+			</if>
+			<if test="assignment != null">
+				ASSIGNMENT_ID,
+			</if>
+			<if test="responseTime != null and responseTime.startTime != null">
+				RESPONSE_START_TIME,
+			</if>
+			<if test="responseTime != null and responseTime.endTime != null">
+				RESPONSE_END_TIME,
+			</if>
+			<if test="markTime != null and markTime.startTime != null">
+				MARK_START_TIME,
+			</if>
+			<if test="markTime != null and markTime.endTime != null">
+				MARK_END_TIME,
+			</if>
+			<if test="responseNum != null">
+				RESPONSE_NUM,
+			</if>
+			<if test="markNum != null">
+				MARK_NUM,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="relation != null">
+				#{relation.id,jdbcType=VARCHAR},
+			</if>
+			<if test="assignment != null">
+				#{assignment.id,jdbcType=VARCHAR},
+			</if>
+			<if test="responseTime != null and responseTime.startTime != null">
+				#{responseTime.startTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="responseTime != null and responseTime.endTime != null">
+				#{responseTime.endTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="markTime != null and markTime.startTime != null">
+				#{markTime.startTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="markTime != null and markTime.endTime != null">
+				#{markTime.endTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="responseNum != null">
+				#{responseNum,jdbcType=DECIMAL},
+			</if>
+			<if test="markNum != null">
+				#{markNum,jdbcType=DECIMAL},
+			</if>
+			<if test="creator != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=DECIMAL},
+			</if>
+			<if test="updatedby != null">
+				#{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=DECIMAL},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.assignment.entity.AssignmentRelation">
+		update ASSIGNMENT_RELATION AR
+		<set>
+			<if test="responseTime != null">
+				<choose>
+					<when test="responseTime.startTime != null">
+						RESPONSE_START_TIME = #{responseTime.startTime,jdbcType=TIMESTAMP},
+					</when>
+					<otherwise>
+						RESPONSE_START_TIME = null,
+					</otherwise>
+				</choose>
+				<choose>
+					<when test="responseTime.endTime != null">
+						RESPONSE_END_TIME = #{responseTime.endTime,jdbcType=TIMESTAMP},
+					</when>
+					<otherwise>
+						RESPONSE_END_TIME = null,
+					</otherwise>
+				</choose>
+			</if>
+			<if test="markTime != null">
+				<choose>
+					<when test="markTime.startTime != null">
+						MARK_START_TIME = #{markTime.startTime,jdbcType=TIMESTAMP},
+					</when>
+					<otherwise>
+						MARK_START_TIME = null,
+					</otherwise>
+				</choose>
+				<choose>
+					<when test="markTime.endTime != null">
+						MARK_END_TIME = #{markTime.endTime,jdbcType=TIMESTAMP},
+					</when>
+					<otherwise>
+						MARK_END_TIME = null,
+					</otherwise>
+				</choose>
+			</if>
+			<if test="responseNum != null">
+				RESPONSE_NUM = #{responseNum,jdbcType=DECIMAL},
+			</if>
+			<if test="markNum != null">
+				MARK_NUM = #{markNum,jdbcType=DECIMAL},
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null and updateTime > 0">
+				UPDATE_TIME = #{updateTime,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED = #{isDeleted,jdbcType=CHAR},
+			</if>
+		</set>
+		,VERSION = VERSION + 1
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<update id="deleteByLogic" parameterType="map">
+		update ASSIGNMENT_RELATION 
+		set IS_DELETED = 'Y', UPDATE_TIME = #{entity.updateTime, jdbcType=TIMESTAMP}
+		<if test="entity.updatedby != null and entity.updatedby.id != null and entity.updatedby.id != ''">
+			,UPDATEDBY = #{entity.updatedby.id, jdbcType=VARCHAR}
+		</if>
+		where ID in 
+		<foreach collection="ids" open="(" close=")" item="item" separator=",">
+			#{item}
+		</foreach>
+	</update>
+</mapper>

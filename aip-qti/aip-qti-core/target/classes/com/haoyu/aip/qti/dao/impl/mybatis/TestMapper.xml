@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.qti.dao.impl.mybatis.TestMapper" >
+  <resultMap id="TestResultMap" type="com.haoyu.aip.qti.entity.Test" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="TITLE" property="title" jdbcType="VARCHAR" />
+    <result column="DESCRIPTION" property="description" jdbcType="VARCHAR" />
+    <result column="STATE" property="state" jdbcType="VARCHAR" />
+    <result column="AUTHOR" property="author" jdbcType="VARCHAR" />
+    <result column="SHUFFLE" property="shuffle" jdbcType="VARCHAR" />
+    <result column="TIME_LIMITS" property="timeLimits" jdbcType="INTEGER" />
+    <result column="MAX_ATTEMPTS" property="maxAttempts" jdbcType="INTEGER" />
+    <result column="SCORE" property="score" jdbcType="DECIMAL"/>
+    <association property="testPackage" javaType="com.haoyu.aip.qti.entity.TestPackage">
+    	<id column="TEST_PACKAGE_ID" property="id"/>
+    	<result column="SANDBOX_PATH" property="sandboxPath" jdbcType="VARCHAR" />
+    	<result column="TEST_HREF" property="testHref" jdbcType="VARCHAR" />
+    </association>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    QT.ID, QT.TITLE,QT.DESCRIPTION,QT.STATE,QT.AUTHOR,QT.SHUFFLE,QT.TIME_LIMITS,QT.SCORE, QT.MAX_ATTEMPTS,QT.TEST_PACKAGE_ID,QTP.SANDBOX_PATH,QTP.TEST_HREF
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="TestResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from QTI_TEST QT
+    join QTI_TEST_PACKAGE QTP
+    on QT.TEST_PACKAGE_ID = QTP.ID
+    where QT.ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectTest" resultMap="TestResultMap" parameterType="com.haoyu.aip.qti.entity.Test" >
+    select 
+    <include refid="Base_Column_List" />
+    from QTI_TEST IQ
+    where IS_DELETED='N'
+    <if test="state!=null and state!=''">
+    	AND STATE=#{state,jdbcType=VARCHAR}
+    </if>
+    <if test="title!=null and title!=''">
+    	AND TITLE=#{title,jdbcType=VARCHAR}
+    </if>
+  </select>
+  <insert id="insert" parameterType="com.haoyu.aip.qti.entity.Test" >
+    insert into QTI_TEST(ID, TITLE,DESCRIPTION,STATE,AUTHOR,SHUFFLE,
+      TIME_LIMITS,MAX_ATTEMPTS,TEST_PACKAGE_ID,SCORE, 
+      CREATOR, CREATE_TIME, 
+      UPDATE_TIME, IS_DELETED, VERSION
+      )
+      VALUES(#{id,jdbcType=VARCHAR}, #{title,jdbcType=VARCHAR}, #{description,jdbcType=VARCHAR},#{state,jdbcType=VARCHAR},
+      #{author,jdbcType=VARCHAR},#{shuffle,jdbcType=VARCHAR},
+      #{timeLimits,jdbcType=INTEGER},#{maxAttempts,jdbcType=INTEGER},#{testPackage.id,jdbcType=VARCHAR},#{score,jdbcType=DECIMAL},
+      #{creator.id,jdbcType=VARCHAR}, #{createTime,jdbcType=BIGINT}, 
+      #{updateTime,jdbcType=BIGINT}, #{isDeleted,jdbcType=CHAR}, #{version,jdbcType=INTEGER})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.haoyu.aip.qti.entity.Test" >
+    update QTI_TEST
+    SET
+      <if test="title != null" >
+        TITLE = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="description != null" >
+        DESCRIPTION = #{description,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        STATE = #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="score != null and score  &gt; 0" >
+        SCORE = #{score,jdbcType=DECIMAL},
+      </if>
+      <if test="timeLimits != null" >
+        TIME_LIMITS = #{timeLimits,jdbcType=INTEGER},
+      </if>
+      <if test="maxAttempts != null" >
+        MAX_ATTEMPTS = #{maxAttempts,jdbcType=INTEGER},
+      </if>
+      <if test="updatedby != null" >
+        UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        UPDATE_TIME = #{updateTime,jdbcType=BIGINT},
+      </if>
+      VERSION = VERSION+1
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <delete id="deleteByPhysics" parameterType="java.lang.String">
+  	delete FROM QTI_TEST WHERE ID=#{id,jdbcType=VARCHAR}
+  </delete>
+  <update id="deleteByLogic" parameterType="com.haoyu.aip.qti.entity.Test">
+  	update QTI_TEST
+  	SET IS_DELETED='Y',
+  	UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+  	UPDATE_TIME = #{updateTime,jdbcType=BIGINT},
+  	VERSION = VERSION+1
+  	WHERE ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="retrieve" parameterType="com.haoyu.aip.qti.entity.Test">
+  	update QTI_TEST
+  	SET IS_DELETED='N',
+  	UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+  	UPDATE_TIME = #{updateTime,jdbcType=BIGINT},
+  	VERSION = VERSION+1
+  	WHERE ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <insert id="addTestRelations" parameterType="java.util.Map">
+  	INSERT INTO QTI_TEST_RELATION
+  	(TEST_ID,RELATION_ID)
+  	SELECT ID,#{relationId,jdbcType=VARCHAR}
+  	FROM QTI_TEST IQ
+  	WHERE IS_DELETED='N'
+  	AND ID =#{testId,jdbcType=VARCHAR}
+  	AND NOT EXISTS(SELECT 1 FROM QTI_TEST_RELATION IQR 
+  	WHERE IQR.TEST_ID=IQ.ID
+  	AND IQR.RELATION_ID=#{relationId,jdbcType=VARCHAR}
+  	)
+  </insert>
+  <delete id="removeTestRelations" parameterType="java.util.Map">
+  	DELETE FROM  QTI_TEST_RELATION
+  	WHERE TEST_ID=#{testId,jdbcType=VARCHAR}
+  	AND RELATION_ID IN
+  	<foreach collection="relations" item="relationId" separator="," open="(" close=")">
+  		#{relationId,jdbcType=VARCHAR}
+  	</foreach>
+  </delete>
+</mapper>

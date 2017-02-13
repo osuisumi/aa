@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.evaluate.dao.impl.mybatis.EvaluateScoreMapper">
+	<resultMap type="com.haoyu.aip.evaluate.entity.EvaluateScore" id="EvaluateScoreResultMap">
+		<id column="ID" property="id"></id>
+		<result column="EVALUATE_ID" property="evaluateId" jdbcType="VARCHAR" />
+		<result column="ITEM" property="item" jdbcType="VARCHAR" />
+		<result column="SCORE" property="score" jdbcType="INTEGER" />
+		<result column="RELATION_ID" property="relation.id" jdbcType="VARCHAR" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="INTEGER" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="INTEGER" />
+		<result column="UPDATEBY" property="updateBy" jdbcType="VARCHAR" />
+		<result column="IS_DELETED" property="isDeleted" jdbcType="CHAR" />
+		
+		<association property="creator" javaType="com.haoyu.sip.core.entity.User">
+			<id property="id" column="CREATOR_ID" />
+			<result property="realName" column="CREATOR_REAL_NAME" />
+		</association>
+	</resultMap>
+	
+
+	<select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="EvaluateScoreResultMap">
+	
+	</select>
+
+	<select id="select" parameterType="com.haoyu.aip.evaluate.entity.EvaluateScore" resultMap="EvaluateScoreResultMap">
+		select
+		ES.ID,ES.ITEM,ES.SCORE
+		from EVALUATE_SCORE ES
+		where ES.IS_DELETED='N'
+		<if test="evaluateId!=null">
+			and ES.EVALUATE_ID =#{evaluateId}
+		</if>
+		<if test="item!=null">
+			and ES.ITEM = #{item}
+		</if>
+		<if test="relation!=null and relation.id!=null">
+			and ES.RELATION_ID = #{relation.id}
+		</if>
+		order by ES.ITEM
+	</select>
+	
+	<select id="getItemAvgScoreByRelationId" parameterType="java.lang.String" resultType="int">
+		select avg(SCORE) from EVALUATE_SCORE ES
+		where ES.RELATION_ID = #{relationId,jdbcType=VARCHAR}
+		group by ES.ITEM
+		order by ES.ITEM
+	</select>
+	
+	<select id="getAvgScoreByRelationId" parameterType="java.lang.String" resultType="int">
+		select avg(SCORE) from EVALUATE_SCORE ES
+		where ES.RELATION_ID = #{relationId,jdbcType=VARCHAR}
+		group by ES.RELATION_ID
+	</select>
+	
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.evaluate.entity.EvaluateScore">
+		update EVALUATE_SCORE ES
+		<set>
+			<if test="score!=null">
+				ES.SCORE=#{score}
+			</if>
+		</set>
+		,ES.VERSION = ES.VERSION+1
+		where ES.ID = #{id,jdbcType=VARCHAR}
+	</update>
+
+
+	<update id="deleteByLogic" parameterType="com.haoyu.aip.evaluate.entity.EvaluateScore">
+		update EVALUATE_SCORE ES
+		set ES.IS_DELETED='Y'
+		<where>
+			<choose>
+				<when test="id!=null">
+					ES.ID = #{id,jdbcType=VARCHAR}
+				</when>
+				<when test="evaluateId!=null">
+					ES.EVALUATE_ID = #{evaluateId,jdbcType=VARCHAR}
+				</when>
+				<otherwise>
+					ES.ID=''
+				</otherwise>
+			</choose>
+		</where>
+		
+	</update>
+
+	<delete id="deleteByPhysics" parameterType="java.lang.String">
+		delete from EVALUATE_SCORE ES
+		where ES.ID=#{id,jdbcType=VARCHAR}
+	</delete>
+	<delete id="deleteByRelationId" parameterType="java.lang.String">
+		delete from EVALUATE_SCORE ES
+		where ES.RELATION_ID = #{relationId,jdbcType=VARCHAR}
+	</delete>
+
+	<insert id="insert" parameterType="com.haoyu.aip.evaluate.entity.EvaluateScore">
+		insert into EVALUATE_SCORE
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id!=null">
+				ID,
+			</if>
+			<if test="evaluateId!=null">
+				EVALUATE_ID,
+			</if>
+			<if test="item!=null">
+				ITEM,
+			</if>
+			<if test="score!=null">
+				SCORE,
+			</if>
+			<if test="relation!=null and relation.id!=null">
+				RELATION_ID,
+			</if>
+			<if test="creator!=null and creator.id!=null">
+				CREATOR,
+			</if>
+			<if test="createTime!=null">
+				CREATE_TIME,
+			</if>
+			<if test="updateTime!=null">
+				UPDATE_TIME,
+			</if>
+			<if test="updatedby!=null">
+				UPDATEDBY,
+			</if>
+			<if test="isDeleted!=null">
+				IS_DELETED,
+			</if>
+			<if test="version!=null">
+				VERSION,
+			</if>
+		</trim>
+		values
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id!=null">
+				#{id},
+			</if>
+			<if test="evaluateId!=null">
+				#{evaluateId},
+			</if>
+			<if test="item!=null">
+				#{item},
+			</if>
+			<if test="score!=null">
+				#{score},
+			</if>
+			<if test="relation!=null and relation.id!=null">
+				#{relation.id},
+			</if>
+			<if test="creator!=null and creator.id!=null">
+				#{creator.id},
+			</if>
+			<if test="createTime!=null">
+				#{createTime},
+			</if>
+			<if test="updateTime!=null">
+				#{updateTime},
+			</if>
+			<if test="updatedby!=null">
+				#{updatedBy},
+			</if>
+			<if test="isDeleted!=null">
+				#{isDeleted},
+			</if>
+			<if test="version!=null">
+				#{version},
+			</if>
+		</trim>
+	</insert>
+
+
+
+
+
+</mapper>

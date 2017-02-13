@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haoyu.aip.text.dao.impl.mybatis.TextInfoMapper">
+	<resultMap id="BaseResultMap" type="com.haoyu.aip.text.entity.TextInfo">
+		<id column="ID" jdbcType="VARCHAR" property="id" />
+		<result column="TITLE" jdbcType="VARCHAR" property="title" />
+		<result column="CONTENT" jdbcType="VARCHAR" property="content" />
+		<result column="TYPE" jdbcType="VARCHAR" property="type" />
+		<result column="STATE" jdbcType="VARCHAR" property="state" />
+		<result column="CREATOR" jdbcType="VARCHAR" property="creator.id" />
+		<result column="CREATE_TIME" jdbcType="DECIMAL" property="createTime" />
+		<result column="UPDATEDBY" jdbcType="VARCHAR" property="updatedby.id" />
+		<result column="UPDATE_TIME" jdbcType="DECIMAL" property="updateTime" />
+		<result column="VERSION" jdbcType="DECIMAL" property="version" />
+		<result column="IS_DELETED" jdbcType="CHAR" property="isDeleted" />
+	</resultMap>
+	<sql id="BaseSelectSql">
+		select TI.ID, TI.TITLE, TI.CONTENT, TI.TYPE, TI.STATE, TI.CREATOR, TI.CREATE_TIME
+		from TEXT_INFO TI
+	</sql>
+	<sql id="BaseWhereSql">
+		<choose>
+			<when test="isDeleted != null and isDeleted != ''">
+				where TI.IS_DELETED = #{isDeleted}
+			</when>
+			<otherwise>
+				where TI.IS_DELETED = 'N'
+			</otherwise>
+		</choose>
+		<if test="title != null and title != ''">
+			and TI.TITLE like '%${title}%'
+		</if>
+	</sql>
+	<select id="select" parameterType="map" resultMap="BaseResultMap">
+		<include refid="BaseSelectSql" />
+		<include refid="BaseWhereSql" />
+	</select>
+	<select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+		<include refid="BaseSelectSql" />
+		where ID = #{id,jdbcType=VARCHAR}
+	</select>
+	<insert id="insert" parameterType="com.haoyu.aip.text.entity.TextInfo">
+		insert into TEXT_INFO
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="title != null">
+				TITLE,
+			</if>
+			<if test="content != null">
+				CONTENT,
+			</if>
+			<if test="type != null">
+				TYPE,
+			</if>
+			<if test="state != null">
+				STATE,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="title != null">
+				#{title,jdbcType=VARCHAR},
+			</if>
+			<if test="content != null">
+				#{content,jdbcType=VARCHAR},
+			</if>
+			<if test="type != null">
+				#{type,jdbcType=VARCHAR},
+			</if>
+			<if test="state != null">
+				#{state,jdbcType=VARCHAR},
+			</if>
+			<if test="creator != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=DECIMAL},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.text.entity.TextInfo">
+		update TEXT_INFO
+		<set>
+			<if test="title != null">
+				TITLE = #{title,jdbcType=VARCHAR},
+			</if>
+			<if test="content != null">
+				CONTENT = #{content,jdbcType=VARCHAR},
+			</if>
+			<if test="type != null">
+				TYPE = #{type,jdbcType=VARCHAR},
+			</if>
+			<if test="state != null">
+				STATE = #{state,jdbcType=VARCHAR},
+			</if>
+			<if test="creator != null">
+				CREATOR = #{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME = #{createTime,jdbcType=DECIMAL},
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime,jdbcType=DECIMAL},
+			</if>
+			<if test="version != null">
+				VERSION = #{version,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED = #{isDeleted,jdbcType=CHAR},
+			</if>
+		</set>
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<update id="deleteByLogic" parameterType="com.haoyu.aip.text.entity.TextInfo">
+		update TEXT_INFO
+		set IS_DELETED = 'Y', UPDATE_TIME = #{updateTime,jdbcType=DECIMAL}
+		<if test="updatedby != null and updatedby.id != null and updatedby.id != ''">
+			,UPDATEDBY = #{updatedby.id,jdgcType=VARCHAR}
+		</if>
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+</mapper>

@@ -1,0 +1,7 @@
+com\haoyu\ApplicationContext.class
+com\haoyu\ApplicationConfigurations.class
+com\haoyu\aip\debate\restapi\DebateController.class
+com\haoyu\MybatisConfig.class
+com\haoyu\JdbcConnectionSettings.class
+com\haoyu\AbstractSettings.class
+com\haoyu\Application.class

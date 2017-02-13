@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.assignment.dao.impl.mybatis.AssignmentRelationMapper">
+	<resultMap id="BaseResultMap" type="com.haoyu.aip.assignment.entity.AssignmentRelation">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result property="relation.id" column="RELATION_ID"  jdbcType="VARCHAR" />
+		<result property="assignment.id" column="ASSIGNMENT_ID" jdbcType="VARCHAR" />
+		<result property="createTime" column="CREATE_TIME" jdbcType="INTEGER" />
+    	<result property="timePeriod.startTime" column="START_TIME" jdbcType="DATE"/>
+    	<result property="timePeriod.endTime" column="END_TIME" jdbcType="DATE"/>
+    	<result property="participateNum" column="PARTICIPATE_NUM"  jdbcType="INTEGER"/>
+    	<result property="browseNum" column="BROWSE_NUM"  jdbcType="INTEGER"/>
+	</resultMap>
+	<sql id="selectColumnSQL" >
+	    select AR.ID, AR.RELATION_ID, AR.ASSIGNMENT_ID, AR.CREATE_TIME, AR.START_TIME, AR.END_TIME, AR.PARTICIPATE_NUM, AR.BROWSE_NUM,
+		from ASSIGNMENT_RELATION AR
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String">
+		<include refid="selectColumnSQL" />
+		where AR.ID = #{id,jdbcType=VARCHAR}
+	</select>
+	<insert id="insert" parameterType="com.haoyu.aip.assignment.entity.AssignmentRelation">
+		insert into ASSIGNMENT_RELATION
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="relation != null">
+				RELATION_ID,
+			</if>
+			<if test="assignment != null">
+				ASSIGNMENT_ID,
+			</if>
+			<if test="timePeriod != null and timePeriod.startTime != null">
+				START_TIME,
+			</if>
+			<if test="timePeriod != null and timePeriod.endTime != null">
+				END_TIME,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="relation != null">
+				#{relation.id,jdbcType=VARCHAR},
+			</if>
+			<if test="assignment != null">
+				#{assignment.id,jdbcType=VARCHAR},
+			</if>
+			<if test="timePeriod != null and timePeriod.startTime != null">
+				#{timePeriod.startTime,jdbcType=DATE},
+			</if>
+			<if test="timePeriod != null and timePeriod.endTime != null">
+				#{timePeriod.endTime,jdbcType=DATE},
+			</if>
+			<if test="creator != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=DATE},
+			</if>
+			<if test="updatedby != null">
+				#{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=DATE},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.assignment.entity.AssignmentRelation">
+		update ASSIGNMENT_RELATION AR
+		<set>
+			<if test="timePeriod != null and timePeriod.startTime != null">
+				START_TIME = #{timePeriod.startTime,jdbcType=DATE},
+			</if>
+			<if test="timePeriod != null and timePeriod.endTime != null">
+				END_TIME = #{timePeriod.endTime,jdbcType=DATE},
+			</if>
+			<if test="participateNum != null and participateNum > 0">
+				PARTICIPATE_NUM = (select count(ID) from ASSIGNMENT_USER where IS_DELETED = 'N' and ASSIGNMENT_RELATION_ID = AR.ID),
+			</if>
+			<if test="browseNum != null and browseNum > 0">
+				BROWSE_NUM = BROWSE_NUM + 1,
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null and updateTime > 0">
+				UPDATE_TIME = #{updateTime,jdbcType=INTEGER},
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED = #{isDeleted,jdbcType=CHAR},
+			</if>
+		</set>
+		,VERSION = VERSION + 1
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<update id="updateByIdNotSelective" parameterType="com.haoyu.aip.assignment.entity.AssignmentRelation">
+		update ASSIGNMENT_RELATION AR
+		<set>
+			<if test="timePeriod != null">
+				START_TIME = #{timePeriod.startTime,jdbcType=DATE},
+			</if>
+			<if test="timePeriod != null">
+				END_TIME = #{timePeriod.endTime,jdbcType=DATE},
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null and updateTime > 0">
+				UPDATE_TIME = #{updateTime,jdbcType=INTEGER},
+			</if>
+		</set>
+		,VERSION = VERSION + 1
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<update id="deleteByLogic" parameterType="com.haoyu.aip.assignment.entity.AssignmentRelation">
+		update ASSIGNMENT_RELATION
+		set IS_DELETED = 'Y', UPDATE_TIME = #{updateTime,jdbcType=INTEGER}
+		<if test="updatedby != null and updatedby.id != null and updatedby.id != ''">
+			,UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR}
+		</if>
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+</mapper>

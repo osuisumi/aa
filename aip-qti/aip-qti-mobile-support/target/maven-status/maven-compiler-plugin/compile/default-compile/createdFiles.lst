@@ -1,0 +1,5 @@
+com\haoyu\aip\qti\mobile\entity\MTestSubmission.class
+com\haoyu\aip\qti\mobile\controller\MTestUserController.class
+com\haoyu\aip\qti\mobile\entity\MTest.class
+com\haoyu\aip\qti\mobile\entity\MTestUser.class
+com\haoyu\aip\qti\mobile\entity\MQuestion.class

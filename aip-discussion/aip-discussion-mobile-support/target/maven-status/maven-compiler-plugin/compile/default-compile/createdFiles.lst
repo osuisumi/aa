@@ -1,0 +1,10 @@
+com\haoyu\aip\discussion\mobile\service\impl\MDiscussionService.class
+com\haoyu\aip\discussion\mobile\entity\MDiscussion.class
+com\haoyu\aip\discussion\mobile\service\IMDiscussionPostService.class
+com\haoyu\aip\discussion\mobile\entity\MDiscussionRelation.class
+com\haoyu\aip\discussion\mobile\entity\MDiscussionUser.class
+com\haoyu\aip\discussion\mobile\controller\MDiscussionPostController.class
+com\haoyu\aip\discussion\mobile\service\IMDiscussionService.class
+com\haoyu\aip\discussion\mobile\entity\MDiscussionPost.class
+com\haoyu\aip\discussion\mobile\service\impl\MDiscussionPostService.class
+com\haoyu\aip\discussion\mobile\controller\MDiscussionController.class

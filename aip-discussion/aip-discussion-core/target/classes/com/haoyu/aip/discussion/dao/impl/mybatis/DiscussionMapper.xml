@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.discussion.dao.impl.mybatis.DiscussionMapper">
+	<resultMap id="BaseResultMap" type="com.haoyu.aip.discussion.entity.Discussion">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="TITLE" property="title" jdbcType="VARCHAR" />
+		<result column="CONTENT" property="content" jdbcType="VARCHAR" />
+		<result column="STATE" property="state" jdbcType="VARCHAR" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="INTEGER" />
+		<result column="CREATOR" property="creator.id" jdbcType="VARCHAR" />
+		<result column="REAL_NAME" property="creator.realName" jdbcType="VARCHAR" />	
+		<result column="AVATAR" property="creator.avatar" jdbcType="VARCHAR" />	
+		<result column="DEPT_NAME" property="creator.deptName" jdbcType="VARCHAR" />	
+		<collection property="discussionRelations" ofType="com.haoyu.aip.discussion.entity.DiscussionRelation">
+	    	<id property="id" column="DISCUSSION_RELATION_ID"/>
+	    	<result property="participateNum" column="PARTICIPATE_NUM" jdbcType="INTEGER"/>
+	    	<result property="browseNum" column="BROWSE_NUM" jdbcType="INTEGER"/>
+	    	<result property="replyNum" column="REPLY_NUM" jdbcType="INTEGER"/>
+	    	<result property="supportNum" column="SUPPORT_NUM" jdbcType="INTEGER"/>
+	    	<result property="followNum" column="FOLLOW_NUM" jdbcType="INTEGER"/>
+	    	<result property="timePeriod.startTime" column="START_TIME" jdbcType="DATE"/>
+	    	<result property="timePeriod.endTime" column="END_TIME" jdbcType="DATE"/>
+	    	<result property="isTop" column="IS_TOP" jdbcType="VARCHAR" />	
+	    	<result property="isEssence" column="IS_ESSENCE" jdbcType="VARCHAR" />	
+	    	<result property="relation.id" column="RELATION_ID" jdbcType="VARCHAR" />
+	    	<result property="relation.type" column="RELATION_TYPE" jdbcType="VARCHAR" />	
+	    	<result property="lastPost.id" column="LAST_POST_ID" jdbcType="VARCHAR" />
+    		<result property="lastPost.createTime" column="LAST_POST_CREATE_TIME" jdbcType="INTEGER" />
+    		<result property="lastPost.creator.id" column="LAST_POST_CREATOR_ID" jdbcType="VARCHAR" />
+	    	<result property="lastPost.creator.realName" column="LAST_POST_CREATOR_REAL_NAME" jdbcType="VARCHAR"/>
+	    	<result property="lastPost.targetId" column="LAST_POST_TARGET_ID" jdbcType="VARCHAR"/>
+	    	<result property="lastPost.content" column="LAST_POST_CONTENT" jdbcType="VARCHAR"/>
+	    </collection>
+	</resultMap>
+	<sql id="BaseSelectSql" >
+		select D.ID,D.TITLE,D.CONTENT,D.STATE,D.CREATOR,D.CREATE_TIME,
+	  	DR.ID DISCUSSION_RELATION_ID,DR.RELATION_TYPE,DR.PARTICIPATE_NUM,DR.BROWSE_NUM,DR.REPLY_NUM, DR.START_TIME, DR.END_TIME,DR.IS_TOP,DR.IS_ESSENCE,DR.RELATION_ID,DR.SUPPORT_NUM,
+	  	DR.LAST_POST_ID, DR.FOLLOW_NUM,
+	  	DP.CREATE_TIME LAST_POST_CREATE_TIME,DP.CONTENT LAST_POST_CONTENT,DP.TARGET_ID LAST_POST_TARGET_ID,
+	  	STA.DAYS TOP_DAYS,
+	  	
+	  	(select BUV.REAL_NAME from BASE_USER_VIEW BUV where BUV.ID = D.CREATOR) REAL_NAME,
+	  	(select BUV.AVATAR from BASE_USER_VIEW BUV where BUV.ID = D.CREATOR) AVATAR,
+	  	(select BUV.DEPT_NAME from BASE_USER_VIEW BUV where BUV.ID = D.CREATOR) DEPT_NAME,
+	  	
+	  	(select BUV.ID from BASE_USER_VIEW BUV where BUV.ID = DP.CREATOR) LAST_POST_CREATOR_ID,
+	  	(select BUV.REAL_NAME from BASE_USER_VIEW BUV where BUV.ID = DP.CREATOR) LAST_POST_CREATOR_REAL_NAME
+	</sql>
+	<sql id="BaseFromSql" >
+	  	from DISCUSSION D
+	  	left join DISCUSSION_RELATION DR
+	  	on DR.DISCUSSION_ID = D.ID
+	  	and DR.IS_DELETED = 'N'
+	  	left join DISCUSSION_POST DP
+	  	on DR.LAST_POST_ID = DP.ID
+	  	and DP.IS_DELETED = 'N'
+	  	left join STATUS STA
+	  	on STA.RELATION_ID = D.ID
+	  	and STA.STATE = 'top'
+	</sql>
+	<sql id="BaseWhereSql" >
+		where D.IS_DELETED = 'N'
+		<if test="title != null and title != ''">
+			and D.TITLE like '%${title}%'
+		</if>
+		<if test="relationId != null and relationId != ''">
+			and DR.RELATION_ID = #{relationId}
+		</if>
+		<if test="relationType != null and  relationType != ''">
+			and DR.RELATION_TYPE = #{relationType}
+		</if>
+		<if test="isEssence != null and isEssence != ''">
+			and DR.IS_ESSENCE = #{isEssence}
+		</if>
+		<if test="ids != null">
+			and D.ID in
+			<foreach collection="ids" open="(" close=")" separator="," item="id">
+				#{id,jdbcType=VARCHAR}
+			</foreach>
+		</if>
+		<if test="creator != null and creator != ''">
+			and D.CREATOR = #{creator,jdbcType=VARCHAR}
+		</if>
+		<if test="state != null and state != ''">
+			and #{state} like concat('%',concat(D.STATE,'%'))
+		</if>
+		<if test="realName != null and realName != ''">
+			and exists (select 1 from BASE_USER_VIEW where ID = D.CREATOR and REAL_NAME like '%${realName}%')
+		</if>
+		<if test="deptName != null and deptName != ''">
+			and exists (select 1 from BASE_USER_VIEW where ID = D.CREATOR and DEPT_NAME like '%${deptName}%')
+		</if>
+		<if test="deptId != null and deptId != ''">
+			and exists (select 1 from BASE_USER_VIEW where ID = D.CREATOR and DEPT_ID = #{deptId})
+		</if>
+		<if test="statusNeq != null and statusNeq != ''">
+			and not exists (select 1 from STATUS where RELATION_ID = D.ID and STATE = #{statusNeq} and DAYS != 0)
+		</if>
+		<if test="statusEq != null and statusEq != ''">
+			and exists (select 1 from STATUS where RELATION_ID = D.ID and STATE = #{statusEq} and DAYS != 0)
+		</if>
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String">
+		<include refid="BaseSelectSql" />
+		<include refid="BaseFromSql" />
+		where D.ID = #{id,jdbcType=VARCHAR}
+	</select>
+	<select id="select" resultMap="BaseResultMap" parameterType="map">
+		<include refid="BaseSelectSql" />
+		<include refid="BaseFromSql" />
+		<include refid="BaseWhereSql" />
+	</select>
+	
+	<insert id="insert" parameterType="com.haoyu.aip.discussion.entity.Discussion">
+		insert into DISCUSSION
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="title != null">
+				TITLE,
+			</if>
+			<if test="content != null">
+				CONTENT,
+			</if>
+			<if test="state != null">
+				STATE,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="title != null">
+				#{title,jdbcType=VARCHAR},
+			</if>
+			<if test="content != null">
+				#{content,jdbcType=VARCHAR},
+			</if>
+			<if test="state != null">
+				#{state,jdbcType=VARCHAR},
+			</if>
+			<if test="creator != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=INTEGER},
+			</if>
+			<if test="updatedby != null">
+				#{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=INTEGER},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.discussion.entity.Discussion">
+		update DISCUSSION
+		<set>
+			<if test="title != null">
+				TITLE = #{title,jdbcType=VARCHAR},
+			</if>
+			<if test="content != null">
+				CONTENT = #{content,jdbcType=VARCHAR},
+			</if>
+			<if test="state != null">
+				STATE = #{state,jdbcType=VARCHAR},
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime,jdbcType=INTEGER},
+			</if>
+			<if test="isDeleted != null"> 
+				IS_DELETED = #{isDeleted,jdbcType=CHAR},
+			</if>
+		</set>
+		,VERSION = VERSION + 1
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<update id="deleteByLogic" parameterType="com.haoyu.aip.discussion.entity.Discussion">
+		update DISCUSSION
+		set IS_DELETED = 'Y', UPDATE_TIME = #{updateTime,jdbcType=INTEGER}
+		<if test="updatedby != null">
+			,UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR}
+		</if>
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<select id="selectByOp" resultMap="BaseResultMap" parameterType="map">
+		<include refid="BaseSelectSql" />
+		<include refid="BaseFromSql" />
+		where D.IS_DELETED = 'N'
+		<if test="relationId!=null and relationId!=''">
+			and DR.RELATION_ID = #{relationId}
+		</if>
+		<if test="relationType != null and  relationType != ''">
+			and DR.RELATION_TYPE = #{relationType}
+		</if>
+		<if test="id != null and id != ''">
+			<if test="op == 'createTimeGt'.toString()">
+				and D.CREATE_TIME <![CDATA[>]]> (select CREATE_TIME from DISCUSSION where ID = #{id}) ORDER BY D.CREATE_TIME 
+			</if>
+			<if test="op == 'createTimeLt'.toString()">
+				and D.CREATE_TIME <![CDATA[<]]> (select CREATE_TIME from DISCUSSION where ID = #{id}) ORDER BY D.CREATE_TIME DESC 
+			</if>
+		</if>
+		<if test="deptId != null and deptId != ''">
+			and exists (select 1 from BASE_USER_VIEW where ID = D.CREATOR and DEPT_ID = #{deptId})
+		</if>
+	</select>
+	<update id="updateByIds" parameterType="map">
+		update DISCUSSION
+		set UPDATE_TIME = #{entity.updateTime,jdbcType=DECIMAL}
+		<if test="entity != null">
+			<if test="entity.updatedby != null">
+				,UPDATEDBY = #{entity.updatedby.id,jdbcType=VARCHAR}
+			</if>
+			<if test="entity.state != null and entity.state != ''">
+				,STATE = #{entity.state,jdbcType=VARCHAR}
+			</if>
+		</if>
+		where ID in 
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</update>
+	<update id="deleteByIds" parameterType="map">
+		update DISCUSSION
+		set IS_DELETED = 'Y', UPDATE_TIME = #{entity.updateTime,jdbcType=DECIMAL}
+		<if test="entity != null">
+			<if test="entity.updatedby != null">
+				,UPDATEDBY = #{entity.updatedby.id,jdbcType=VARCHAR}
+			</if>
+		</if>
+		where ID in 
+		<foreach collection="ids" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</update>
+	<select id="getCount" resultType="int" parameterType="map">
+		select count(D.ID)
+		<include refid="BaseFromSql" />
+		<include refid="BaseWhereSql" />
+	</select>
+</mapper>

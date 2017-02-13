@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.assignment.dao.impl.mybatis.AssignmentMarkMapper">
+	<resultMap id="BaseResultMap" type="com.haoyu.aip.assignment.entity.AssignmentMark">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="USER_ID" property="user.id" jdbcType="VARCHAR" />
+		<result column="SCORE" property="score" jdbcType="DECIMAL" />
+		<result column="STATE" property="state" jdbcType="VARCHAR" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="DECIMAL" />
+		
+		<result column="ASSIGNMENT_USER_ID" property="assignmentUser.id" jdbcType="VARCHAR" />
+		<result column="RESPONSE_TIME" property="assignmentUser.responseTime" jdbcType="TIMESTAMP" />
+		<result column="REAL_NAME" property="assignmentUser.creator.realName" jdbcType="VARCHAR" />
+	</resultMap>
+	<sql id="BaseSelectSql">
+		select AM.ID, AM.ASSIGNMENT_USER_ID, AM.USER_ID, AM.SCORE, AM.STATE, AM.CREATE_TIME,
+		AU.RESPONSE_TIME,
+		(select BUV.REAL_NAME from BASE_USER_VIEW BUV where BUV.ID = AU.CREATOR) REAL_NAME
+	</sql>
+	<sql id="BaseFromSql">
+		from ASSIGNMENT_MARK AM
+		join ASSIGNMENT_USER AU
+		on AU.ID = AM.ASSIGNMENT_USER_ID
+		and AU.IS_DELETED = 'N'
+	</sql>
+	<sql id="BaseWhereSql">
+		<choose>
+			<when test="isDeleted != null and isDeleted != ''">
+				where AM.IS_DELETED = #{isDeleted}
+			</when>
+			<otherwise>
+				where AM.IS_DELETED = 'N'
+			</otherwise>
+		</choose>
+		<if test="state != null and state != ''">
+			and AM.STATE = #{state}
+		</if>
+		<if test="userId != null and userId != ''">
+			and AM.USER_ID = #{userId}
+		</if>
+		<if test="assignmentUserId != null and assignmentUserId != ''">
+			and AM.ASSIGNMENT_USER_ID = #{assignmentUserId}
+		</if>
+		<if test="assignmentRelationId != null and assignmentRelationId != ''">
+			and AU.ASSIGNMENT_RELATION_ID = #{assignmentRelationId}
+		</if>
+		<if test="createTimeLessThan != null">
+			and AM.CREATE_TIME <![CDATA[ < ]]> #{createTimeLessThan, jdbcType=DECIMAL}
+		</if>
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String">
+		<include refid="BaseSelectSql" />
+		<include refid="BaseFromSql" />
+		where AM.ID = #{id,jdbcType=VARCHAR}
+	</select>
+	<select id="select" resultMap="BaseResultMap" parameterType="map">
+		<include refid="BaseSelectSql" />
+		<include refid="BaseFromSql" />
+		<include refid="BaseWhereSql" />
+	</select>
+	<select id="getCount" resultType="int" parameterType="map">
+		select count(AM.ID)
+		<include refid="BaseFromSql" />
+		<include refid="BaseWhereSql" />
+	</select>
+	<insert id="insert" parameterType="com.haoyu.aip.assignment.entity.AssignmentMark">
+		insert into ASSIGNMENT_MARK
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="assignmentUser != null and assignmentUser.id != null">
+				ASSIGNMENT_USER_ID,
+			</if>
+			<if test="user != null and user.id != null">
+				USER_ID,
+			</if>
+			<if test="score != null">
+				SCORE,
+			</if>
+			<if test="state != null">
+				STATE,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="assignmentUser != null and assignmentUser.id != null">
+				#{assignmentUser.id,jdbcType=VARCHAR},
+			</if>
+			<if test="user != null and user.id != null">
+				#{user.id,jdbcType=VARCHAR},
+			</if>
+			<if test="score != null">
+				#{score,jdbcType=DECIMAL},
+			</if>
+			<if test="state != null">
+				#{state,jdbcType=VARCHAR},
+			</if>
+			<if test="creator != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=INTEGER},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.assignment.entity.AssignmentMark">
+		update ASSIGNMENT_MARK
+		<set>
+			<if test="score != null">
+				SCORE = #{score,jdbcType=DECIMAL},
+			</if>
+			<if test="state != null">
+				STATE = #{state,jdbcType=VARCHAR},
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED = #{isDeleted,jdbcType=CHAR},
+			</if>
+		</set>
+		,VERSION = VERSION + 1
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<update id="deleteByLogic" parameterType="map">
+		update ASSIGNMENT_MARK
+		set IS_DELETED = 'Y', UPDATE_TIME = #{entity.updateTime, jdbcType=TIMESTAMP}
+		<if test="entity.updatedby != null and entity.updatedby.id != null and entity.updatedby.id != ''">
+			,UPDATEDBY = #{entity.updatedby.id, jdbcType=VARCHAR}
+		</if>
+		where ID in 
+		<foreach collection="ids" open="(" close=")" item="item" separator=",">
+			#{item}
+		</foreach>
+	</update>
+	<insert id="insertBatch" parameterType="map">
+		insert into ASSIGNMENT_MARK(ID, ASSIGNMENT_USER_ID, USER_ID, STATE, CREATOR, CREATE_TIME, VERSION, IS_DELETED)
+		select ${assignmentMark.id}, ID, #{assignmentMark.user.id}, #{assignmentMark.state}, #{assignmentMark.creator.id}, #{assignmentMark.createTime, jdbcType=DECIMAL}, 
+		#{assignmentMark.version, jdbcType=DECIMAL}, #{assignmentMark.isDeleted, jdbcType=CHAR}
+		from ASSIGNMENT_USER 
+		where ID in 
+		<foreach collection="assignmentUserIds" open="(" close=")" separator="," item="item">
+			#{item}
+		</foreach>
+	</insert>
+	<delete id="deleteByParam" parameterType="map">
+		delete from ASSIGNMENT_MARK
+		where 
+		<if test="assignmentUserId != null and assignmentUserId != ''">
+			ASSIGNMENT_USER_ID = #{assignmentUserId}
+		</if>
+		<if test="createTimeLessThan != null and state != null and state != ''">
+			CREATE_TIME <![CDATA[ < ]]> #{createTimeLessThan, jdbcType=DECIMAL} and STATE = #{state}
+		</if>
+	</delete>
+</mapper>

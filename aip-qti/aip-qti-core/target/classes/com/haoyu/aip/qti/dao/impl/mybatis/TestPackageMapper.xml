@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.qti.dao.impl.mybatis.TestPackageMapper" >
+  <resultMap id="TestPackageResultMap" type="com.haoyu.aip.qti.entity.TestPackage" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="SANDBOX_PATH" property="sandboxPath" jdbcType="VARCHAR" />
+    <result column="TEST_HREF" property="testHref" jdbcType="VARCHAR" />
+    <result column="FILE_NAME" property="fileName" jdbcType="VARCHAR" />
+    <result column="IS_DELETED" property="isDeleted" jdbcType="CHAR" />
+    <result column="VERSION" property="version" jdbcType="INTEGER" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    ID,SANDBOX_PATH,TEST_HREF,FILE_NAME,IS_DELETED,VERSION
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="TestPackageResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from QTI_TEST_PACKAGE
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <insert id="insert" parameterType="com.haoyu.aip.qti.entity.TestPackage" >
+    insert into QTI_TEST_PACKAGE(ID,SANDBOX_PATH,TEST_HREF,FILE_NAME ,
+      CREATOR, CREATE_TIME,  
+      UPDATE_TIME, IS_DELETED, VERSION
+      )
+      VALUES(#{id,jdbcType=VARCHAR}, #{sandboxPath,jdbcType=VARCHAR}, #{testHref,jdbcType=VARCHAR}, #{fileName,jdbcType=VARCHAR},
+      #{creator.id,jdbcType=VARCHAR}, #{createTime,jdbcType=BIGINT}, 
+      #{updateTime,jdbcType=BIGINT}, #{isDeleted,jdbcType=CHAR}, #{version,jdbcType=INTEGER})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.haoyu.aip.qti.entity.TestPackage" >
+    update QTI_TEST_PACKAGE
+    SET
+      <if test="updatedby != null" >
+        UPDATEDBY = #{updatedby,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        UPDATE_TIME = #{updateTime,jdbcType=BIGINT},
+      </if>
+      VERSION = VERSION+1
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <delete id="deleteByPhysics" parameterType="java.lang.String">
+  	delete FROM QTI_TEST_PACKAGE WHERE ID=#{id,jdbcType=VARCHAR}
+  </delete>
+  <update id="deleteByLogic" parameterType="com.haoyu.aip.qti.entity.TestPackage">
+  	update QTI_TEST_PACKAGE
+  	SET IS_DELETED='Y',
+  	UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+  	UPDATE_TIME = #{updateTime,jdbcType=BIGINT},
+  	VERSION = VERSION+1
+  	WHERE ID = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

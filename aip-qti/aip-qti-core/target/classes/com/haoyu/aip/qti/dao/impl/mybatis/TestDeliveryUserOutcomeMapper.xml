@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.qti.dao.impl.mybatis.TestDeliveryUserOutcomeMapper" >
+  <insert id="insert" parameterType="com.haoyu.aip.qti.entity.TestDeliveryUserOutcome" >
+    insert into QTI_TEST_DU_OUTCOME(ID, BASE_TYPE,CARDINALITY,OUTCOME_IDENTIFIER,STRING_VALUE,TEST_DELIVERY_USER_ID,
+      CREATOR, CREATE_TIME, 
+      UPDATE_TIME, IS_DELETED, VERSION
+      )
+      VALUES(#{id,jdbcType=VARCHAR}, #{baseType,jdbcType=VARCHAR}, #{cardinality,jdbcType=VARCHAR},#{outcomeIdentifier,jdbcType=VARCHAR},
+      #{stringValue,jdbcType=VARCHAR},#{testDeliveryUser.id,jdbcType=VARCHAR},
+      #{creator.id,jdbcType=VARCHAR}, #{createTime,jdbcType=BIGINT}, 
+      #{updateTime,jdbcType=BIGINT}, #{isDeleted,jdbcType=CHAR}, #{version,jdbcType=INTEGER})
+  </insert>
+  <delete id="deleteByTestDeliveryUser" parameterType="java.lang.String">
+  	DELETE FROM QTI_TEST_DU_OUTCOME WHERE TEST_DELIVERY_USER_ID=#{testDeliveryUserId,jdbcType=VARCHAR}
+  </delete>
+</mapper>

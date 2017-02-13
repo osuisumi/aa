@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.haoyu.aip.courseware.dao.impl.mybatis.CoursewareRelationMapper">
+	<resultMap id="CoursewareRelationResultMap" type="com.haoyu.aip.courseware.entity.CoursewareRelation">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="COURSEWARE_ID" property="coursewareId" jdbcType="VARCHAR" />
+		<result column="RELATION_ID" property="relation.id" jdbcType="VARCHAR" />
+		<result column="PARTICIPATE_NUM" property="participateNum" jdbcType="INTEGER" />
+		<result column="BROWSE_NUM" property="browseNum" jdbcType="INTEGER" />
+		<result column="COLLECT_NUM" property="collectNum" jdbcType="INTEGER" />
+		<result column="FOLLOW_NUM" property="followNum" jdbcType="INTEGER" />
+		<result column="REPLY_NUM" property="replyNum" jdbcType="INTEGER" />
+		<result column="IS_TOP" property="isTop" jdbcType="CHAR" />
+		<result column="IS_ESSENCE" property="isEssence" jdbcType="CHAR" />
+		<result column="TYPE" property="relation.type" jdbcType="VARCHAR" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="BIGINT" />
+		<result column="UPDATE_TIME" property="updateTime" jdbcType="BIGINT" />
+		<result column="VERSION" property="version" jdbcType="DECIMAL" />
+		<result column="START_TIME" property="timePeriod.startTime" jdbcType="DATE"/>
+		<result column="END_TIME" property="timePeriod.endTime" jdbcType="DATE"/>
+	</resultMap>
+	<sql id="Base_Column_List">
+		LCR.ID,LCR.COURSEWARE_ID,LCR.RELATION_ID,LCR.PARTICIPATE_NUM,LCR.BROWSE_NUM,LCR.COLLECT_NUM,LCR.FOLLOW_NUM,LCR.REPLY_NUM,LCR.IS_TOP,LCR.IS_ESSENCE,LCR.TYPE,LCR.CREATOR,LCR.UPDATEDBY,LCR.CREATE_TIME,LCR.UPDATE_TIME,LCR.IS_DELETED,LCR.VERSION
+	</sql>
+
+	<select id="select" resultMap="CoursewareRelationResultMap" parameterType="java.util.Map">
+		SELECT
+		<include refid="Base_Column_List" />
+		from COURSEWARE_RELATION LCR
+		where LCR.IS_DELETED='N'
+	</select>
+
+	<select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="CoursewareRelationResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from COURSEWARE_RELATION LCR
+		where LCR.IS_DELETED='N'
+		and LCR.ID=#{id,jdbcType=VARCHAR}
+	</select>
+
+
+	<update id="deleteLogic" parameterType="com.haoyu.aip.courseware.entity.CoursewareRelation">
+		update COURSEWARE_RELATION LCR
+		set LCR.IS_DELETED = 'Y'
+		<where>
+			<choose>
+				<when test="id!=null">
+					LCR.ID = #{id,jdbcType=VARCHAR}
+				</when>
+				<when test="coursewareId!=null">
+					LCR.COURSEWARE_ID = #{coursewareId,jdbcType=VARCHAR}
+				</when>
+			</choose>
+		</where>
+	</update>
+
+	
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.courseware.entity.CoursewareRelation">
+		update COURSEWARE_RELATION LCR
+		<set>
+			<if test="timePeriod!=null and timePeriod.startTime!=null">
+				START_TIME = #{timePeriod.startTime},
+			</if>
+			<if test="timePeriod!=null and timePeriod.endTime!=null">
+				END_TIME = #{timePeriod.endTime},
+			</if>
+			<if test="isTop!=null">
+				IS_TOP = #{isTop},
+			</if>
+			<if test="participateNum!=null">
+				PARTICIPATE_NUM = (select count(ID) from COURSEWARE_USER where COURSEWARE_ID = LCR.COURSEWARE_ID)
+			</if>
+		</set>
+		where LCR.ID = #{id,jdbcType=VARCHAR}
+	</update>
+	
+	<delete id="deletePhysics" parameterType="java.lang.String">
+		delete from COURSEWARE_RELATION LCR
+		where LCR.ID=#{id,jdbcType=VARCHAR}
+	</delete>
+
+	<!-- 插入 -->
+	<insert id="insert" parameterType="com.haoyu.aip.courseware.entity.CoursewareRelation">
+		insert into COURSEWARE_RELATION
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="coursewareId != null">
+				COURSEWARE_ID,
+			</if>
+			<if test="relation!=null and relation.id != null">
+				RELATION_ID,
+			</if>
+			<if test="participateNum != null">
+				PARTICIPATE_NUM,
+			</if>
+			<if test="browseNum != null">
+				BROWSE_NUM,
+			</if>
+			<if test="collectNum != null">
+				COLLECT_NUM,
+			</if>
+			<if test="followNum != null">
+				FOLLOW_NUM,
+			</if>
+			<if test="replyNum != null">
+				REPLY_NUM,
+			</if>
+			<if test="isTop != null">
+				IS_TOP,
+			</if>
+			<if test="isEssence != null">
+				IS_ESSENCE,
+			</if>
+			<if test="relation!=null and relation.type != null">
+				TYPE,
+			</if>
+			<if test="updatedby!=null">
+				UPDATEDBY,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+			<if test="timePeriod!=null and timePeriod.startTime!=null">
+				START_TIME,
+			</if>
+			<if test="timePeriod!=null and timePeriod.endTime!=null">
+				END_TIME
+			</if>
+
+		</trim>
+
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id},
+			</if>
+			<if test="coursewareId != null">
+				#{coursewareId},
+			</if>
+			<if test="relation!=null and relation.id != null">
+				#{relation.id},
+			</if>
+			<if test="participateNum != null">
+				#{participateNum},
+			</if>
+			<if test="browseNum != null">
+				#{browseNum},
+			</if>
+			<if test="collectNum != null">
+				#{collectNum},
+			</if>
+			<if test="followNum != null">
+				#{followNum},
+			</if>
+			<if test="replyNum != null">
+				#{replyNum},
+			</if>
+			<if test="isTop != null">
+				#{isTop},
+			</if>
+			<if test="isEssence != null">
+				#{isEssence},
+			</if>
+			<if test="relation!=null and relation.type != null">
+				#{relation.type},
+			</if>
+			<if test="updatedby!=null">
+				#{updatedby.id},
+			</if>
+			<if test="createTime != null">
+				#{createTime},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted},
+			</if>
+			<if test="version != null">
+				#{version},
+			</if>
+			<if test="timePeriod!=null and timePeriod.startTime!=null">
+				#{timePeriod.startTime},
+			</if>
+			<if test="timePeriod!=null and timePeriod.endTime!=null">
+				#{timePeriod.endTime}
+			</if>
+		</trim>
+	</insert>
+
+</mapper>

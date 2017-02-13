@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.activity.dao.impl.mybatis.ActivityRelationMapper">
+	<resultMap id="BaseResultMap" type="com.haoyu.aip.activity.entity.ActivityRelation">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="ACTIVITY_ID" property="activityId" jdbcType="VARCHAR" />
+		<result column="RELATION_ID" property="relationId" jdbcType="VARCHAR" />
+		<result column="PARTICIPATE_NUM" property="participateNum" jdbcType="INTEGER" />
+		<result column="BROWSE_NUM" property="browseNum" jdbcType="INTEGER" />
+		<result column="FOLLOW_NUM" property="followNum" jdbcType="INTEGER" />
+		<result column="COLLECT_NUM" property="collectNum" jdbcType="INTEGER" />
+		<result column="REPLY_NUM" property="replyNum" jdbcType="INTEGER" />
+		<result column="LAST_REPLY_TIME" property="lastReplyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID, ACTIVITY_ID, RELATION_ID, PARTICIPATE_NUM, BROWSE_NUM, FOLLOW_NUM, COLLECT_NUM, REPLY_NUM,LAST_REPLY_TIME
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from ACTIVITY_RELATION
+		where ID = #{id,jdbcType=VARCHAR}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+		delete from ACTIVITY_RELATION
+		where ID = #{id,jdbcType=VARCHAR}
+	</delete>
+	<insert id="insert" parameterType="com.haoyu.aip.activity.entity.ActivityRelation">
+		insert into ACTIVITY_RELATION
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="activity != null">
+				ACTIVITY_ID,
+			</if>
+			<if test="relation != null">
+				RELATION_ID,
+			</if>
+			<if test="participateNum != null">
+				PARTICIPATE_NUM,
+			</if>
+			<if test="browseNum != null">
+				BROWSE_NUM,
+			</if>
+			<if test="followNum != null">
+				FOLLOW_NUM,
+			</if>
+			<if test="collectNum != null">
+				COLLECT_NUM,
+			</if>
+			<if test="replyNum != null">
+				REPLY_NUM,
+			</if>
+			<if test="lastReplyTime != null">
+				LAST_REPLY_TIME,
+			</if>
+			<if test="timePeriod != null and timePeriod.startTime != null">
+				START_TIME,
+			</if>
+			<if test="timePeriod != null and timePeriod.endTime != null">
+				END_TIME,
+			</if>
+			<if test="isTop != null">
+				IS_TOP,
+			</if>
+			<if test="isEssence != null">
+				IS_ESSENCE,
+			</if>
+			<if test="relation != null and relation.type != null">
+				TYPE,
+			</if>
+			<if test="creator != null and creator.id != null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updatedby != null and updatedby.id != null">
+				UPDATEDBY,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="activity != null">
+				#{activity.id,jdbcType=VARCHAR},
+			</if>
+			<if test="relation != null">
+				#{relation.id,jdbcType=VARCHAR},
+			</if>
+			<if test="participateNum != null">
+				#{participateNum,jdbcType=INTEGER},
+			</if>
+			<if test="browseNum != null">
+				#{browseNum,jdbcType=INTEGER},
+			</if>
+			<if test="followNum != null">
+				#{followNum,jdbcType=INTEGER},
+			</if>
+			<if test="collectNum != null">
+				#{collectNum,jdbcType=INTEGER},
+			</if>
+			<if test="replyNum != null">
+				#{replyNum,jdbcType=INTEGER},
+			</if>
+			<if test="lastReplyTime != null">
+				#{lastReplyTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="timePeriod != null and timePeriod.startTime != null">
+				#{timePeriod.startTime,jdbcType=DATE},
+			</if>
+			<if test="timePeriod != null and timePeriod.endTime != null">
+				#{timePeriod.endTime,jdbcType=DATE},
+			</if>
+			<if test="isTop != null">
+				#{isTop,jdbcType=CHAR},
+			</if>
+			<if test="isEssence != null">
+				#{isEssence,jdbcType=CHAR},
+			</if>
+			<if test="relation != null and relation.type != null">
+				#{relation.type,jdbcType=VARCHAR},
+			</if>
+			<if test="creator != null and creator.id != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=INTEGER},
+			</if>
+			<if test="updatedby != null and updatedby.id != null">
+				#{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=INTEGER},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=CHAR},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.activity.entity.ActivityRelation">
+		update ACTIVITY_RELATION AR
+		<set>
+			<if test="activity != null">
+				ACTIVITY_ID = #{activity.id,jdbcType=VARCHAR},
+			</if>
+			<if test="relation != null">
+				RELATION_ID = #{relation.id,jdbcType=VARCHAR},
+			</if>
+			<if test="participateNum != null and participateNum > 0">
+				PARTICIPATE_NUM = (select count(ID) from ACTIVITY_RESULT where IS_DELETED = 'N' and ACTIVITY_RELATION_ID = AR.ID),
+			</if>
+			<if test="browseNum != null and browseNum > 0">
+				BROWSE_NUM = BROWSE_NUM + 1,
+			</if>
+			<if test="followNum != null and followNum > 0">
+				FOLLOW_NUM = #{followNum, jdbcType=INTEGER},
+			</if>
+			<if test="collectNum != null and collectNum > 0">
+				COLLECT_NUM = #{collectNum, jdbcType=INTEGER},
+			</if>
+			<if test="replyNum != null and replyNum > 0">
+				REPLY_NUM = #{replyNum, jdbcType=INTEGER},
+			</if>
+			<if test="lastReplyTime != null and lastReplyTime > 0">
+				LAST_REPLY_TIME = #{lastReplyTime, jdbcType=TIMESTAMP},
+			</if>
+			<if test="timePeriod != null and timePeriod.startTime != null">
+				START_TIME = #{timePeriod.startTime,jdbcType=DATE},
+			</if>
+			<if test="timePeriod != null and timePeriod.endTime != null">
+				END_TIME = #{timePeriod.endTime,jdbcType=DATE},
+			</if>
+			<if test="isTop != null">
+				IS_TOP = #{isTop,jdbcType=CHAR},
+			</if>
+			<if test="isEssence != null">
+				IS_ESSENCE = #{isEssence,jdbcType=CHAR},
+			</if>
+			<if test="updatedby != null and updatedby.id != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime,jdbcType=INTEGER},
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED = #{isDeleted,jdbcType=CHAR},
+			</if>
+		</set>
+		,VERSION = VERSION + 1
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<update id="updateByIdNotSelective" parameterType="com.haoyu.aip.activity.entity.ActivityRelation">
+		update ACTIVITY_RELATION AR
+		<set>
+			<if test="timePeriod != null">
+				START_TIME = #{timePeriod.startTime,jdbcType=DATE},
+			</if>
+			<if test="timePeriod != null">
+				END_TIME = #{timePeriod.endTime,jdbcType=DATE},
+			</if>
+			<if test="updatedby != null and updatedby.id != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime,jdbcType=INTEGER},
+			</if>
+			<if test="isTop!=null">
+				IS_TOP = #{isTop,jdbcType=VARCHAR},
+			</if>
+			<if test="isEssence!=null">
+				IS_ESSENCE = #{isEssence,jdbcType=VARCHAR},
+			</if>
+		</set>
+		,VERSION = VERSION + 1
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+</mapper>

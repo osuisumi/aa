@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.debate.dao.impl.mybatis.DebateMapper" >
+  <resultMap type="com.haoyu.aip.debate.entity.Debate" id="DebateResultMap">
+  	<id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="TITLE" property="title" jdbcType="VARCHAR" />
+    <result column="STATE" property="state" jdbcType="VARCHAR" />
+    <result property="supplementExplanation" column="SUPPLEMENT_EXPLANATION"/>
+    <result column="CREATOR_REAL_NAME" property="creator.realName" jdbcType="VARCHAR"/>
+    <collection property="arguments" ofType="com.haoyu.aip.debate.entity.DebateArgument">
+    	<id property="id" column="ARGUMENT_ID"/>
+    	<result property="description" column="DESCRIPTION"/>    	
+    	<result property="supplementExplanation" column="ARGUMENT_S_E"/>
+    	<result property="orderNo" column="ORDER_NO"/>
+    </collection>
+    <collection property="debateRelations" ofType="com.haoyu.aip.debate.entity.DebateRelation">
+    	<id property="id" column="DEBATE_RELATION_ID"/>
+    	<result property="timePeriod.startTime" column="START_TIME" jdbcType="DATE"/>
+    	<result property="timePeriod.endTime" column="END_TIME" jdbcType="DATE"/>
+    	<result property="participateNum" column="PARTICIPATE_NUM" jdbcType="INTEGER"/>
+    	<result property="relation.id" column="RELATION_ID" jdbcType="VARCHAR"/>
+    </collection>
+  </resultMap>
+  <sql id="selectDebateColumnSQL" >
+    select D.ID,D.TITLE,D.STATE,D.SUPPLEMENT_EXPLANATION
+  	,DA.ID ARGUMENT_ID,DA.DESCRIPTION,DA.SUPPLEMENT_EXPLANATION ARGUMENT_S_E,DA.ORDER_NO
+  	,DR.ID DEBATE_RELATION_ID,DR.START_TIME,DR.END_TIME,DR.PARTICIPATE_NUM,DR.RELATION_ID,
+  	(select BUV.REAL_NAME from BASE_USER_VIEW BUV where BUV.ID = D.CREATOR) CREATOR_REAL_NAME
+  	from DEBATE D
+  	join DEBATE_RELATION DR
+  	on DR.DEBATE_ID = D.ID
+  	left join DEBATE_ARGUMENT DA
+  	on D.ID = DA.DEBATE_ID
+  	AND DA.IS_DELETED='N'
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="DebateResultMap">
+  	<include refid="selectDebateColumnSQL"/>
+  	where D.ID=#{id,jdbcType=VARCHAR}
+  	ORDER BY DA.ORDER_NO
+  </select>
+  <select id="selectDebateByDebateRelation" parameterType="com.haoyu.aip.debate.entity.DebateRelation" resultMap="DebateResultMap">
+  	<include refid="selectDebateColumnSQL"/>
+  	where 
+  	<choose>
+  		<when test="id!=null and id!=''">
+  			DR.ID=#{id,jdbcType=VARCHAR}
+  		</when>
+  		<otherwise>
+  			D.ID=#{debate.id,jdbcType=VARCHAR}
+  			AND DR.RELATION_ID=#{relation.id,jdbcType=VARCHAR}
+  		</otherwise>
+  	</choose>  	
+  </select>
+  <select id="selectDebateByParameterMap" parameterType="java.util.Map" resultMap="DebateResultMap">
+  	<include refid="selectDebateColumnSQL"/>
+  	where D.IS_DELETED='N'
+  	<if test="relations!=null">
+  		AND DR.RELATION_ID IN
+  		<foreach collection="relations" item="relationId" open="(" close=")" separator=",">
+  			#{relationId,jdbcType=VARCHAR}
+  		</foreach>
+  	</if>
+  	<if test="title!=null">
+  		AND D.TITLE LIKE '%${title}%'
+  	</if>
+  </select>
+  <insert id="insert" parameterType="com.haoyu.aip.debate.entity.Debate">
+  	insert into DEBATE(ID,TITLE,STATE,SUPPLEMENT_EXPLANATION,CREATOR,CREATE_TIME,IS_DELETED,VERSION)
+  	values(#{id,jdbcType=VARCHAR},#{title,jdbcType=VARCHAR},#{state,jdbcType=VARCHAR},#{supplementExplanation,jdbcType=VARCHAR},#{creator.id,jdbcType=VARCHAR},
+  	#{createTime,jdbcType=BIGINT},#{isDeleted,jdbcType=VARCHAR},#{version,jdbcType=DECIMAL})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.haoyu.aip.debate.entity.Debate" >
+    update DEBATE
+    <set >
+      <if test="title != null" >
+        TITLE = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="supplementExplanation != null" >
+        SUPPLEMENT_EXPLANATION = #{supplementExplanation,jdbcType=VARCHAR},
+      </if>
+      <if test="updatedby != null" >
+        UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        UPDATE_TIME = #{updateTime,jdbcType=BIGINT},
+      </if>
+      VERSION = VERSION+1
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <delete id="deleteByPhysics" parameterType="java.lang.String">
+  	delete from DEBATE WHERE ID=#{id,jdbcType=VARCHAR}
+  </delete>
+  <update id="deleteByLogic" parameterType="com.haoyu.aip.debate.entity.DebateArgument">
+  	update DEBATE
+  	set IS_DELETED='Y'
+  	,UPDATEDBY=#{updatedby.id,jdbcType=VARCHAR}
+  	,UPDATE_TIME=#{updateTime,jdbcType=BIGINT}
+  	where ID=#{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

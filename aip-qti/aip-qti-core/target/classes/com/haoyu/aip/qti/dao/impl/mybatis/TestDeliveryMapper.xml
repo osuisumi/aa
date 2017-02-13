@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.qti.dao.impl.mybatis.TestDeliveryMapper" >
+  <resultMap type="com.haoyu.aip.qti.entity.TestDelivery" id="TestDeliveryResultMap">
+  	<id property="id" column="ID"/>
+  	<result property="relationId" column="RELATION_ID"/>
+  	<association property="test" javaType="com.haoyu.aip.qti.entity.Test">
+    	<id column="TEST_ID" property="id"/>
+    </association>
+  </resultMap>
+  <select id="selectByTestDelivery" parameterType="com.haoyu.aip.qti.entity.TestDelivery"  resultMap="TestDeliveryResultMap">
+  	SELECT ID,RELATION_ID,TEST_ID
+  	FROM QTI_TEST_DELIVERY
+  	WHERE RELATION_ID=#{relationId,jdbcType=VARCHAR}
+  	AND TEST_ID=#{test.id,jdbcType=VARCHAR}
+  </select>
+  <insert id="insert" parameterType="com.haoyu.aip.qti.entity.TestDelivery">
+    insert into QTI_TEST_DELIVERY(ID, RELATION_ID,TITLE,TYPE,TEST_ID,STATE,
+      CREATOR, CREATE_TIME, 
+      UPDATE_TIME, IS_DELETED, VERSION
+      )
+      VALUES(#{id,jdbcType=VARCHAR}, #{relationId,jdbcType=VARCHAR}, #{title,jdbcType=VARCHAR},#{type,jdbcType=VARCHAR},
+      #{test.id,jdbcType=VARCHAR},#{state,jdbcType=INTEGER},
+      #{creator.id,jdbcType=VARCHAR}, #{createTime,jdbcType=BIGINT}, 
+      #{updateTime,jdbcType=BIGINT}, #{isDeleted,jdbcType=CHAR}, #{version,jdbcType=INTEGER})
+  </insert>
+</mapper>

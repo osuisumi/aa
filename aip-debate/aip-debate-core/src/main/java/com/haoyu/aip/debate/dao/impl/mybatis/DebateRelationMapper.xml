@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.debate.dao.impl.mybatis.DebateRelationMapper" >
+  <resultMap type="com.haoyu.aip.debate.entity.DebateRelation" id="debateRelationStatResultMap">
+  	 	<id column="ID" property="id" jdbcType="VARCHAR" />
+  	<result property="viewsNum" column="VIEWS_NUM" jdbcType="INTEGER"/>
+  	<result property="commentsNum" column="COMMENTS_NUM" jdbcType="INTEGER"/>
+  	<association property="debate" javaType="com.haoyu.aip.debate.entity.Debate">
+  		<id property="id" column="DEBATE_ID" jdbcType="VARCHAR"/>  	
+  		<collection property="arguments" ofType="com.haoyu.aip.debate.entity.DebateArgument">
+	    	<id property="id" column="ARGUMENT_ID" jdbcType="VARCHAR"/>  	
+	    	<result property="orderNo" column="ORDER_NO" jdbcType="INTEGER"/>
+    	</collection>
+  	</association>
+  </resultMap>
+  <select id="selectDebateRelationStatByDebateUser" parameterType="com.haoyu.aip.debate.entity.DebateUser" resultMap="debateRelationStatResultMap">
+  	select DR.ID, DA.ID ARGUMENT_ID,DA.ORDER_NO,DR.DEBATE_ID
+  	,(CASE WHEN DUV.VIEWS_NUM IS NULL THEN 0 ELSE DUV.VIEWS_NUM END) VIEWS_NUM,(CASE WHEN DUV.COMMENTS_NUM IS NULL THEN 0 ELSE DUV.COMMENTS_NUM END) COMMENTS_NUM
+  	from DEBATE_RELATION DR
+  	join DEBATE D
+  	on DR.DEBATE_ID = D.ID
+  	join DEBATE_ARGUMENT DA
+  	on DA.DEBATE_ID = D.ID
+  	left join (select DU.DEBATE_RELATION_ID, COUNT(DUV.ID) VIEWS_NUM,SUM(DUV.COMMENTS_NUM) COMMENTS_NUM
+  	from DEBATE_USER DU
+  	join DEBATE_ARGUMENT DA
+  	ON DU.ARGUMENT_ID=DA.ID
+  	join DEBATE_USER_VIEWS DUV
+  	on DUV.DEBATE_USER_ID = DU.ID
+  	WHERE  DU.IS_DELETED='N'
+  	AND DUV.IS_DELETED='N'
+  	AND DU.DEBATE_RELATION_ID=#{debateRelation.id,jdbcType=VARCHAR}
+  	<if test="id!=null and id!=''">
+  		AND DU.ID=#{id,jdbcType=VARCHAR}
+  	</if>
+  	<if test="creator!=null and creator.id!=null and creator.id!=''">
+  		AND DU.CREATOR=#{creator.id,jdbcType=VARCHAR}
+  	</if>
+	<if test="argument!=null and argument.id!=null and argument.id!=''">
+		AND DU.ARGUMENT_ID=#{argument.id,jdbcType=VARCHAR}
+	</if>
+	group by DU.DEBATE_RELATION_ID
+	) DUV
+	ON DR.ID = DUV.DEBATE_RELATION_ID
+	WHERE   DR.IS_DELETED='N'
+  	AND DA.IS_DELETED='N'	
+  	AND D.IS_DELETED='N'
+  	AND DR.ID=#{debateRelation.id,jdbcType=VARCHAR}
+  </select>
+  <insert id="insert" parameterType="com.haoyu.aip.debate.entity.DebateRelation">
+  	insert into DEBATE_RELATION(ID,RELATION_ID,DEBATE_ID,START_TIME,END_TIME,BROWSE_NUM,CREATOR,CREATE_TIME,IS_DELETED,VERSION)
+  	values(#{id,jdbcType=VARCHAR},#{relation.id,jdbcType=VARCHAR},#{debate.id,jdbcType=VARCHAR},#{timePeriod.startTime,jdbcType=DATE},#{timePeriod.endTime,jdbcType=DATE}
+  	,#{browseNum,jdbcType=INTEGER},#{creator.id,jdbcType=VARCHAR},#{createTime,jdbcType=BIGINT},#{isDeleted,jdbcType=VARCHAR},#{version,jdbcType=DECIMAL})
+  </insert>
+  <update id="updateParticipateNum" parameterType="java.lang.String" >
+    update DEBATE_RELATION
+    set PARTICIPATE_NUM=(SELECT PARTICIPATE_NUM FROM (SELECT count(DU.ID) PARTICIPATE_NUM FROM DEBATE_USER DU 
+    	JOIN DEBATE_RELATION DR ON DU.DEBATE_RELATION_ID=DR.ID WHERE DU.IS_DELETED='N'
+    	AND DR.ID=#{id,jdbcType=VARCHAR}) TMP
+    	)
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateBrowseNum" parameterType="java.lang.String" >
+    update DEBATE_RELATION
+    set BROWSE_NUM=BROWSE_NUM+1
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateFollowNum" parameterType="com.haoyu.aip.debate.entity.DebateRelation">
+  	update DEBATE_RELATION
+  	set FOLLOW_NUM=#{followNum,jdbcType=INTEGER}
+  	where ID=#{id,jdbcType=VARCHAR}
+  </update>
+  <delete id="deleteByPhysics" parameterType="java.lang.String" >
+    delete from DEBATE_RELATION
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+</mapper>

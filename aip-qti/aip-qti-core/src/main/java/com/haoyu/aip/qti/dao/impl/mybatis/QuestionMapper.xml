@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.qti.dao.impl.mybatis.QuestionMapper" >
+  <resultMap id="QuestionResultMap" type="com.haoyu.aip.qti.entity.Question" >
+    <id column="ID" property="id" jdbcType="VARCHAR" />
+    <result column="TITLE" property="title" jdbcType="VARCHAR" />
+    <result column="QUES_TYPE" property="quesType" jdbcType="VARCHAR" />
+    <result column="STATE" property="state" jdbcType="VARCHAR" />
+    <result column="AUTHOR" property="author" jdbcType="VARCHAR" />
+    <result column="KEYWORDS" property="keywords" jdbcType="VARCHAR" />
+    <result column="SCORE" property="score" jdbcType="DECIMAL"/>
+    <result column="IS_DELETED" property="isDeleted" jdbcType="CHAR" />
+    <result column="VERSION" property="version" jdbcType="INTEGER" />
+    <association property="questionPackage" javaType="com.haoyu.aip.qti.entity.QuestionPackage">
+    	<id column="QUESTION_PACKAGE_ID" property="id"/>
+    	<result column="SANDBOX_PATH" property="sandboxPath" jdbcType="VARCHAR" />
+    	<result column="QUESTION_HREF" property="questionHref" jdbcType="VARCHAR" />
+    </association>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    QQ.ID, QQ.TITLE,QQ.QUES_TYPE,QQ.STATE,QQ.AUTHOR,QQ.KEYWORDS,QQ.SCORE, QQ.IS_DELETED, QQ.VERSION,QQ.QUESTION_PACKAGE_ID,QQP.SANDBOX_PATH,QQP.QUESTION_HREF
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="QuestionResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from QTI_QUESTION QQ
+    JOIN QTI_QUESTION_PACKAGE QQP
+    ON QQ.QUESTION_PACKAGE_ID = QQP.ID
+    where QQ.ID = #{id,jdbcType=VARCHAR}
+  </select>
+  <insert id="insert" parameterType="com.haoyu.aip.qti.entity.Question" >
+    insert into QTI_QUESTION(ID, TITLE,QUES_TYPE,STATE,AUTHOR,KEYWORDS,SCORE, QUESTION_PACKAGE_ID,
+      CREATOR, CREATE_TIME, 
+      UPDATE_TIME, IS_DELETED, VERSION
+      )
+     values( #{id,jdbcType=VARCHAR}, #{title,jdbcType=VARCHAR}, #{quesType,jdbcType=VARCHAR},#{state,jdbcType=VARCHAR},
+      #{author,jdbcType=VARCHAR},#{keywords,jdbcType=VARCHAR},#{score,jdbcType=DECIMAL},#{questionPackage.id,jdbcType=VARCHAR},
+      #{creator.id,jdbcType=VARCHAR}, #{createTime,jdbcType=BIGINT},
+      #{updateTime,jdbcType=BIGINT}, #{isDeleted,jdbcType=CHAR}, #{version,jdbcType=INTEGER})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.haoyu.aip.qti.entity.Question" >
+    update QTI_QUESTION
+    SET
+      <if test="title != null" >
+        TITLE = #{title,jdbcType=VARCHAR},
+      </if>
+      <if test="quesType != null" >
+        QUES_TYPE = #{quesType,jdbcType=VARCHAR},
+      </if>
+      <if test="state != null" >
+        STATE = #{state,jdbcType=VARCHAR},
+      </if>
+      <if test="keywords != null" >
+        KEYWORDS = #{keywords,jdbcType=VARCHAR},
+      </if>
+      <if test="score != null" >
+        SCORE = #{score,jdbcType=DECIMAL},
+      </if>
+      <if test="updatedby != null" >
+        UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+      </if>
+      <if test="updateTime != null" >
+        UPDATE_TIME = #{updateTime,jdbcType=BIGINT},
+      </if>
+      VERSION = VERSION+1
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  <delete id="deleteByPhysics" parameterType="java.lang.String">
+  	delete FROM QTI_QUESTION WHERE ID=#{id,jdbcType=VARCHAR}
+  </delete>
+  <update id="deleteByLogic" parameterType="com.haoyu.aip.qti.entity.Question">
+  	update QTI_QUESTION
+  	SET IS_DELETED='Y',
+  	UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+  	UPDATE_TIME = #{updateTime,jdbcType=BIGINT},
+  	VERSION = VERSION+1
+  	WHERE ID=#{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

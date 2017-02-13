@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.activity.dao.impl.mybatis.ActivityAttributeMapper">
+	<resultMap id="BaseResultMap" type="com.haoyu.aip.activity.entity.ActivityAttribute">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="ACTIVITY_ID" property="activity.id" jdbcType="VARCHAR" />
+		<result column="ATTR_NAME" property="attrName" jdbcType="VARCHAR" />
+		<result column="ATTR_VALUE" property="attrValue" jdbcType="VARCHAR" />
+		<result column="ATTR_TYPE" property="attrType" jdbcType="VARCHAR" />
+	</resultMap>
+	<select id="select" resultMap="BaseResultMap">
+		select AA.ID, AA.ACTIVITY_ID, AA.ATTR_NAME, AA.ATTR_VALUE, AA.ATTR_TYPE
+		from ACTIVITY_ATTRIBUTE AA
+		where AA.IS_DELETED = 'N'
+		<if test="activityId != null and activityId != ''">
+			and AA.ACTIVITY_ID = #{activityId}
+		</if>
+		<if test="activities != null">
+			and AA.ACTIVITY_ID in
+			<foreach collection="activities" open="(" close=")" separator="," item="item">
+				#{item}
+			</foreach>
+		</if>
+	</select>
+	<insert id="insert" parameterType="com.haoyu.aip.activity.entity.ActivityAttribute">
+		insert into ACTIVITY_ATTRIBUTE
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="activity != null and activity.id != null">
+				ACTIVITY_ID,
+			</if>
+			<if test="attrName != null">
+				ATTR_NAME,
+			</if>
+			<if test="attrValue != null">
+				ATTR_VALUE,
+			</if>
+			<if test="attrType != null">
+				ATTR_TYPE,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="activity != null and activity.id != null">
+				#{activity.id,jdbcType=VARCHAR},
+			</if>
+			<if test="attrName != null">
+				#{attrName,jdbcType=VARCHAR},
+			</if>
+			<if test="attrValue != null">
+				#{attrValue,jdbcType=VARCHAR},
+			</if>
+			<if test="attrType != null">
+				#{attrType,jdbcType=VARCHAR},
+			</if>
+			<if test="creator != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=DECIMAL},
+			</if>
+			<if test="updatedby != null">
+				#{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=VARCHAR},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.activity.entity.ActivityAttribute">
+		update ACTIVITY_ATTRIBUTE
+		<set>
+			<if test="attrValue != null">
+				ATTR_VALUE = #{attrValue,jdbcType=VARCHAR},
+			</if>
+			<if test="updatedby != null and updatedby.id != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED = #{isDeleted,jdbcType=CHAR},
+			</if>
+		</set>
+		,VERSION = VERSION + 1
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+</mapper>

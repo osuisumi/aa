@@ -1,0 +1,5 @@
+com\haoyu\aip\assignment\controller\AssignmentController.class
+com\haoyu\aip\assignment\controller\AssignmentMarkController.class
+com\haoyu\aip\assignment\controller\AssignmentUserController.class
+com\haoyu\aip\assignment\service\impl\AssignmentBizServiceImpl.class
+com\haoyu\aip\assignment\service\IAssignmentBizService.class

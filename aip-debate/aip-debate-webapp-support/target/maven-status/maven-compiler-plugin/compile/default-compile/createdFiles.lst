@@ -1,0 +1,4 @@
+com\haoyu\aip\debate\controller\DebateUserController.class
+com\haoyu\aip\debate\controller\DebateUserViewsController.class
+com\haoyu\aip\debate\controller\DebateController.class
+com\haoyu\aip\debate\controller\AbstractDebateController.class

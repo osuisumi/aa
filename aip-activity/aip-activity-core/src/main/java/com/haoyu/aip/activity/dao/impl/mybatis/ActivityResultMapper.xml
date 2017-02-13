@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.activity.dao.impl.mybatis.ActivityResultMapper">
+	<resultMap id="BaseResultMap" type="com.haoyu.aip.activity.entity.ActivityResult">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="ACTIVITY_RELATION_ID" property="activityRelation.id" jdbcType="VARCHAR" />
+		<result column="STATE" property="state" jdbcType="VARCHAR" />
+		<result column="SCORE" property="score" jdbcType="DECIMAL" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="INTEGER" />
+		<result column="CREATOR" property="creator.id" jdbcType="VARCHAR" />
+		<result column="REAL_NAME" property="creator.realName" jdbcType="VARCHAR" />	
+		<result column="AVATAR" property="creator.avatar" jdbcType="VARCHAR" />	
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID, ACTIVITY_RELATION_ID, STATE, SCORE, CREATOR, CREATE_TIME
+	</sql>
+	<select id="select" parameterType="map" resultMap="BaseResultMap">
+		select 
+		<include refid="Base_Column_List" />
+		from ACTIVITY_RESULT
+		where IS_DELETED = 'N'
+		<if test="userId != null and userId != ''">
+			and CREATOR = #{userId}
+		</if>
+	</select>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select
+		<include refid="Base_Column_List" />
+		from ACTIVITY_RESULT
+		where ID = #{id,jdbcType=VARCHAR}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+		delete from ACTIVITY_RESULT
+		where ID = #{id,jdbcType=VARCHAR}
+	</delete>
+	<insert id="insert" parameterType="com.haoyu.aip.activity.entity.ActivityResult">
+		insert into ACTIVITY_RESULT
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="activityRelation != null">
+				ACTIVITY_RELATION_ID,
+			</if>
+			<if test="state != null">
+				STATE,
+			</if>
+			<if test="score != null">
+				SCORE,
+			</if>
+			<if test="creator != null and creator.id != null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updatedby != null and updatedby.id != null">
+				UPDATEDBY,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="activityRelation != null">
+				#{activityRelation.id,jdbcType=VARCHAR},
+			</if>
+			<if test="state != null">
+				#{state,jdbcType=VARCHAR},
+			</if>
+			<if test="score != null">
+				#{score,jdbcType=DECIMAL},
+			</if>
+			<if test="creator != null and creator.id != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=DECIMAL},
+			</if>
+			<if test="updatedby != null and updatedby.id != null">
+				#{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=DECIMAL},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.activity.entity.ActivityResult">
+		update ACTIVITY_RESULT
+		<set>
+			<if test="state != null">
+				STATE = #{state,jdbcType=VARCHAR},
+			</if>
+			<if test="score != null">
+				SCORE = #{score,jdbcType=DECIMAL},
+			</if>
+			<if test="updatedby != null and updatedby.id != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED = #{isDeleted,jdbcType=CHAR},
+			</if>
+			,VERSION = VERSION + 1
+		</set>
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<select id="getCount" parameterType="map" resultType="int">
+		select count(ID)
+		from ACTIVITY_RESULT AR
+		where IS_DELETED = 'N'
+		<if test="relationId != null and relationId != ''">
+			and exists(select 1 from ACTIVITY_RELATION where ID = AR.ACTIVITY_RELATION_ID and IS_DELETED = 'N' and RELATION_ID = #{relationId} ) 
+		</if>
+	</select>
+	<delete id="deleteByPhysics" parameterType="string">
+		delete from ACTIVITY_RESULT 
+		where ID = #{id, jdbcType=VARCHAR}
+	</delete>
+</mapper>

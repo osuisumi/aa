@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haoyu.aip.assignment.dao.impl.mybatis.AssignmentUserMapper">
+	<resultMap id="BaseResultMap" type="com.haoyu.aip.assignment.entity.AssignmentUser">
+		<id column="ID" property="id" jdbcType="VARCHAR" />
+		<result column="STATE" property="state" jdbcType="VARCHAR" />
+		<result column="SCORE" property="score" jdbcType="DECIMAL" />
+		<result column="REMARK" property="remark" jdbcType="VARCHAR" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="INTEGER" />
+		<result column="CREATOR" property="creator.id" jdbcType="VARCHAR" />
+		<result column="REAL_NAME" property="creator.realName" jdbcType="VARCHAR" />	
+		<result column="ASSIGNMENT_RELATION_ID" property="assignmentRelation.id" jdbcType="VARCHAR"  />
+		<result column="RELATION_ID" property="assignmentRelation.relation.id" jdbcType="VARCHAR" />
+		<result column="START_TIME" property="assignmentRelation.timePeriod.startTime" jdbcType="DATE"/>
+		<result column="PARTICIPATE_NUM" property="assignmentRelation.participateNum"  jdbcType="INTEGER"/>
+    	<result column="BROWSE_NUM" property="assignmentRelation.browseNum"  jdbcType="INTEGER"/>
+    	<result column="END_TIME" property="assignmentRelation.timePeriod.endTime" jdbcType="DATE"/>
+	    <result column="ASSIGNMENT_ID" property="assignmentRelation.assignment.id" jdbcType="VARCHAR"  />
+	    <result column="TITLE" property="assignmentRelation.assignment.title" jdbcType="VARCHAR"  />
+		<result column="CONTENT" property="assignmentRelation.assignment.content" jdbcType="VARCHAR" />
+		<result column="ASSIGNMENT_CREATE_TIME" property="assignmentRelation.assignment.createTime" jdbcType="INTEGER" />
+		<result column="ASSIGNMENT_CREATOR" property="assignmentRelation.assignment.creator.id" jdbcType="VARCHAR" />
+		<result column="ASSIGNMENT_CREATOR_NAME" property="assignmentRelation.assignment.creator.realName" jdbcType="VARCHAR" />	
+	</resultMap>
+	<sql id="Base_Column_List">
+		ID, ASSIGNMENT_RELATION_ID, STATE, SCORE, REMARK
+	</sql>
+	<select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String">
+		select AU.ID, AU.STATE, AU.SCORE, AU.REMARK, AU.CREATE_TIME, AU.CREATOR,
+		AR.ID ASSIGNMENT_RELATION_ID, AR.RELATION_ID, AR.ASSIGNMENT_ID, AR.PARTICIPATE_NUM, AR.BROWSE_NUM,
+		A.TITLE, A.CONTENT
+		from ASSIGNMENT_USER AU
+		join ASSIGNMENT_RELATION AR
+		on AR.ID = AU.ASSIGNMENT_RELATION_ID 
+		and AR.IS_DELETED = 'N'
+		join ASSIGNMENT A
+		on A.ID = AR.ASSIGNMENT_ID 
+		and A.IS_DELETED = 'N'
+		where AU.ID = #{id,jdbcType=VARCHAR}
+	</select>
+	<select id="selectOne" resultMap="BaseResultMap" parameterType="com.haoyu.aip.assignment.entity.AssignmentUser">
+		select AU.ID, AU.STATE, AU.SCORE, AU.REMARK,
+		AR.ID ASSIGNMENT_RELATION_ID, AR.RELATION_ID, AR.START_TIME, AR.END_TIME, AR.ASSIGNMENT_ID, AR.PARTICIPATE_NUM, AR.BROWSE_NUM,
+		A.TITLE, A.CONTENT, A.STATE, A.CREATE_TIME ASSIGNMENT_CREATE_TIME, A.CREATOR ASSIGNMENT_CREATOR,
+		BUV.REAL_NAME ASSIGNMENT_CREATOR_NAME
+		from ASSIGNMENT A
+		join ASSIGNMENT_RELATION AR
+		on AR.ASSIGNMENT_ID = A.ID
+		and AR.IS_DELETED = 'N'
+		left join ASSIGNMENT_USER AU
+		on AU.ASSIGNMENT_RELATION_ID = AR.ID
+		and AU.IS_DELETED = 'N'
+		and AU.CREATOR = #{creator.id, jdbcType=VARCHAR}
+		join BASE_USER_VIEW BUV
+		on BUV.ID = A.CREATOR
+		where A.ID = #{assignmentRelation.assignment.id,jdbcType=VARCHAR}
+	</select>
+	<select id="select" resultMap="BaseResultMap" parameterType="com.haoyu.aip.assignment.entity.AssignmentUser">
+		select AU.ID, AU.STATE, AU.SCORE, AU.REMARK, AU.CREATE_TIME,
+		BUV.REAL_NAME
+		from ASSIGNMENT_USER AU
+		join BASE_USER_VIEW BUV
+		on BUV.ID = AU.CREATOR
+		where AU.IS_DELETED = 'N'
+		<if test="assignmentRelation != null">
+			<if test="assignmentRelation.id != null and assignmentRelation.id != ''">
+				and AU.ASSIGNMENT_RELATION_ID = #{assignmentRelation.id,jdbcType=VARCHAR}
+			</if>
+			<if test="assignmentRelation.relation != null and assignmentRelation.relation.id != null and assignmentRelation.relation.id != ''">
+				and exists (select 1 from ASSIGNMENT_RELATION where ID = AU.ASSIGNMENT_RELATION_ID and RELATION_ID = #{assignmentRelation.relation.id, jdbcType=VARCHAR})
+			</if>
+		</if>
+		<if test="creator != null and creator.id != null and creator.id != ''">
+			and AU.CREATOR = #{creator.id,jdbcType=VARCHAR}
+		</if>
+		<if test="state != null and state != ''">
+			and AU.STATE = #{state,jdbcType=VARCHAR}
+		</if>
+	</select>
+	<insert id="insert" parameterType="com.haoyu.aip.assignment.entity.AssignmentUser">
+		insert into ASSIGNMENT_USER
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				ID,
+			</if>
+			<if test="assignmentRelation.id != null">
+				ASSIGNMENT_RELATION_ID,
+			</if>
+			<if test="state != null">
+				STATE,
+			</if>
+			<if test="score != null">
+				SCORE,
+			</if>
+			<if test="remark != null">
+				REMARK,
+			</if>
+			<if test="creator != null">
+				CREATOR,
+			</if>
+			<if test="createTime != null">
+				CREATE_TIME,
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY,
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME,
+			</if>
+			<if test="version != null">
+				VERSION,
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="assignmentRelation.id != null">
+				#{assignmentRelation.id,jdbcType=VARCHAR},
+			</if>
+			<if test="state != null">
+				#{state,jdbcType=VARCHAR},
+			</if>
+			<if test="score != null">
+				#{score,jdbcType=DECIMAL},
+			</if>
+			<if test="remark != null">
+				#{remark,jdbcType=VARCHAR},
+			</if>
+			<if test="creator != null">
+				#{creator.id,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=INTEGER},
+			</if>
+			<if test="updatedby != null">
+				#{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				#{updateTime,jdbcType=DATE},
+			</if>
+			<if test="version != null">
+				#{version,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				#{isDeleted,jdbcType=CHAR},
+			</if>
+		</trim>
+	</insert>
+	<update id="updateByPrimaryKey" parameterType="com.haoyu.aip.assignment.entity.AssignmentUser">
+		update ASSIGNMENT_USER
+		<set>
+			<if test="state != null">
+				STATE = #{state,jdbcType=VARCHAR},
+			</if>
+			<if test="score != null">
+				SCORE = #{score,jdbcType=VARCHAR},
+			</if>
+			<if test="remark != null">
+				REMARK = #{remark,jdbcType=VARCHAR},
+			</if>
+			<if test="updatedby != null">
+				UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR},
+			</if>
+			<if test="updateTime != null">
+				UPDATE_TIME = #{updateTime,jdbcType=DATE},
+			</if>
+			<if test="version != null">
+				VERSION = #{version,jdbcType=DECIMAL},
+			</if>
+			<if test="isDeleted != null">
+				IS_DELETED = #{isDeleted,jdbcType=CHAR},
+			</if>
+		</set>
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+	<update id="deleteByLogic" parameterType="com.haoyu.aip.assignment.entity.AssignmentUser">
+		update ASSIGNMENT_USER
+		set IS_DELETED = 'Y', UPDATE_TIME = #{updateTime,jdbcType=INTEGER}
+		<if test="updatedby != null">
+			,UPDATEDBY = #{updatedby.id,jdbcType=VARCHAR}
+		</if>
+		where ID = #{id,jdbcType=VARCHAR}
+	</update>
+</mapper>
